@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Цифровая фабрика ДПО</title>
+<style>
+:root{
+ --blue:#163a70;--blue2:#315d9b;--blueSoft:#edf3fa;--gold:#b79a61;--goldSoft:#f7f2e8;
+ --bg:#ffffff;--paper:#fff;--text:#111b2a;--muted:#657180;--line:#d9e0e7;--ok:#2f7356;--shadow:0 12px 32px rgba(18,43,78,.08);--r:5px;
+}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,textarea{font:inherit}button{cursor:pointer}.topline{height:5px;background:var(--blue)}.shell{max-width:1220px;margin:auto;padding:0 24px 55px}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:750}.logo{width:40px;height:40px;border-radius:5px;background:var(--blue);color:white;display:grid;place-items:center;font-weight:800;font-size:13px}
+nav{display:flex;gap:10px}.btn{border:1px solid var(--line);background:white;border-radius:5px;padding:10px 14px;color:var(--text)}.btn:hover{border-color:#aebdce}.btn.primary{background:var(--blue);border-color:var(--blue);color:white}.btn.primary:hover{background:#102f5c}.btn.ai{border-color:var(--blue2);color:var(--blue)}.btn.manual{border-color:#b6bdc6;color:#3e4955}
+.section{display:none}.section.active{display:block}.hero{padding:62px 0 30px;max-width:900px}.eyebrow{font-size:13px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--blue)}
+h1{font-size:50px;line-height:1.07;letter-spacing:-.03em;margin:12px 0 18px}h2{font-size:29px;margin:16px 0 8px}h3{font-size:20px;margin:8px 0 10px}.lead,.copy{color:var(--muted);line-height:1.6}.hero .lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}.card,.panel{background:var(--blueSoft);border:1px solid var(--line);border-radius:var(--r)}.card{padding:22px}.panel{padding:30px;box-shadow:none}
+.entry{min-height:200px;display:flex;flex-direction:column;justify-content:space-between;transition:.18s}.entry:hover{transform:translateY(-3px);box-shadow:none;border-color:#a8b9cc}.arrow{font-size:24px;color:var(--blue)}
+.page{padding:38px 0}.backline{margin-bottom:20px}textarea{width:100%;min-height:160px;border:1px solid #cfd8e2;border-radius:5px;padding:16px;line-height:1.55;resize:vertical}textarea:focus{outline:3px solid var(--blueSoft);border-color:var(--blue2)}
+.chips,.actions{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.chip{border:0;border-radius:4px;background:#edf1f5;padding:8px 11px;color:#53606d}.small{font-size:12px;color:var(--muted)}
+.result-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-top:20px}.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:750}.value{font-size:18px;font-weight:750;margin:7px 0 13px}.concept-long p{margin:0 0 13px}
+.approval{display:flex;align-items:center;gap:10px;margin-top:22px}.approved{background:var(--ok)!important;border-color:var(--ok)!important;color:white!important;font-weight:750}
+.editable-active{outline:2px dashed var(--blue2);outline-offset:5px;border-radius:5px;background:#f8fbff}
+[contenteditable="true"]{cursor:text}
+.mode-note{font-size:13px;color:var(--blue);background:var(--blueSoft);padding:10px 12px;border-radius:4px;margin-top:12px}
+.comment-link{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;padding-top:7px;border-top:1px solid var(--line);font-size:12px;color:var(--blue);cursor:pointer}
+.comment-count{min-width:20px;height:20px;padding:0 6px;border-radius:5px;background:var(--blueSoft);display:grid;place-items:center;font-size:11px;font-weight:700}.check{font-weight:900}
+.overview{max-width:960px;margin:auto}.route-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.route-card{background:var(--blueSoft);border:1px solid var(--line);border-radius:5px;padding:16px}.route-card .n{font-size:12px;color:var(--blue);font-weight:800;margin-bottom:8px}.route-card p{font-size:13px;color:var(--muted);line-height:1.45;margin:6px 0}
+.parallel{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}.track{border-top:4px solid var(--gold)}ul.clean{padding-left:20px;color:#566270;line-height:1.65}.legal{border-top:4px solid var(--blue2)}
+.workspace{display:grid;grid-template-columns:265px 1fr;gap:26px;padding:34px 0}.sidebar{position:sticky;top:18px;align-self:start}.sidebar-label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:750;margin-bottom:12px}
+.stage-menu{display:grid;gap:9px}.stage-box{position:relative;background:var(--blueSoft);border:1px solid var(--line);border-radius:5px;padding:12px 38px 12px 13px;font-size:14px;cursor:pointer}.stage-box:hover{border-color:#aebed0}.stage-box.current{border:2px solid var(--blue);padding:11px 37px 11px 12px;background:var(--blueSoft);font-weight:750}.stage-box.done{border-color:#8fb8a2;background:#f0f7f3}.stage-check{position:absolute;right:12px;top:11px;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;background:var(--ok);color:white;font-size:12px;font-weight:900}.after{margin:19px 0 9px;padding-top:16px;border-top:2px solid var(--gold);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#806d47}.subbox{background:var(--blueSoft);border:1px solid var(--line);border-radius:5px;padding:13px;margin-bottom:9px;cursor:pointer}.subbox strong{display:block;font-size:14px;margin-bottom:8px}.subbox ul{font-size:12px;padding-left:18px;color:var(--muted);line-height:1.45;margin:0}.stage-head{margin-bottom:18px}.stage-head h1{font-size:38px;margin:7px 0}.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.notice{background:var(--goldSoft);border-left:3px solid var(--gold);padding:13px 15px;margin-top:16px;color:#5f543e;line-height:1.5;font-size:14px}
+.team-row{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}.modal{position:fixed;inset:0;background:rgba(12,26,45,.46);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modal-card{background:white;border-radius:6px;max-width:720px;width:100%;max-height:84vh;overflow:auto;padding:26px;box-shadow:none}.modal-head{display:flex;justify-content:space-between;gap:12px}.close{border:0;background:#edf1f5;border-radius:4px;padding:8px 10px}.org-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}.org-item{background:#f1f4f7;border-radius:4px;padding:11px;font-size:14px}
+footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-size:12px}
+@media(max-width:850px){h1{font-size:37px}.grid,.result-grid,.route-cards,.parallel,.workspace,.feature-grid{grid-template-columns:1fr}.sidebar{position:static}.org-list{grid-template-columns:1fr}.hide-mobile{display:none}}
+
+.proto-layout{display:grid;grid-template-columns:265px 1fr;gap:28px;padding:28px 0}
+.proto-sidebar{align-self:start}
+.proto-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:750;margin:10px 0 10px}
+.proto-link{position:relative;background:var(--blueSoft);border:1px solid var(--line);border-radius:4px;padding:12px 42px 12px 14px;margin-bottom:8px;font-size:14px;cursor:pointer}
+.proto-link.active{background:var(--blue);color:white;border-color:var(--blue)}
+.proto-link .comment-mini{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:12px;color:var(--blue)}
+.proto-link.active .comment-mini{color:white}
+.proto-link .mini-check{position:absolute;right:12px;top:12px;color:var(--ok);font-weight:900}
+.proto-link.active .mini-check{color:white}
+.proto-sep{border-top:1px solid var(--line);margin:20px 0 12px}
+.info-inner{background:#fff!important;border:1px solid var(--line)!important}
+.concept-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.comment-top{white-space:nowrap}
+@media(max-width:850px){.proto-layout{grid-template-columns:1fr}.proto-sidebar{position:static}}
+
+
+.process-overview{margin-top:42px;padding:28px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.process-overview h2{margin-top:0}
+.process-flow{display:grid;grid-template-columns:1.05fr 1.05fr 1.4fr 1.25fr;gap:14px;margin-top:20px}
+.process-step{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--blueSoft);position:relative}
+.process-step.ai-step{background:#eef8f1;border-color:#b9ddc4}
+.process-step.parallel-step{background:var(--goldSoft);border-color:#dfcfac}
+.process-step.after-step{background:#f7f2f5;border-color:#dbc4d0}
+.process-step .num{font-weight:800;color:var(--blue);font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.process-step h3{margin:0 0 8px;font-size:18px}
+.process-step p{margin:0;color:var(--muted);line-height:1.45;font-size:14px}
+.process-step:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);font-size:22px;font-weight:800;color:var(--blue);z-index:2}
+.parallel-mini{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.parallel-mini span{font-size:12px;padding:5px 8px;border:1px solid #d8c79f;border-radius:999px;background:#fff}
+.market-result{display:none;margin-top:18px}
+.market-result.show{display:block}
+.market-summary{border:1px solid #b9ddc4;background:#f3faf5;border-radius:14px;padding:20px}
+.market-summary h3{margin-top:0}
+.market-verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.verdict-card{padding:14px;border-radius:12px;border:1px solid var(--line);background:#fff}
+.market-actions{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px;margin-top:18px}
+.btn.success{background:#21834b;color:#fff;border-color:#21834b}
+.btn.danger{background:#b73737;color:#fff;border-color:#b73737}
+.btn.success.selected{box-shadow:0 0 0 3px rgba(33,131,75,.16)}
+.btn.danger.selected{box-shadow:0 0 0 3px rgba(183,55,55,.16)}
+.pdf-report{margin-top:14px;display:flex;align-items:center;gap:10px}
+.parallel-note{font-size:12px;color:var(--muted);margin:4px 0 8px}
+@media(max-width:1000px){.process-flow,.market-actions,.market-verdict{grid-template-columns:1fr}.process-step:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-20px}}
+
+
+/* v10 refinements */
+.process-flow{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:14px !important;
+  align-items:stretch;
+}
+.process-step{
+  min-width:0;
+  height:100%;
+  padding:18px !important;
+}
+.process-step:not(:last-child)::after{content:none !important}
+.process-step .num{font-size:12px !important;margin-bottom:7px !important}
+.process-step h3{font-size:16px !important;line-height:1.25 !important;margin:0 0 7px !important}
+.process-step p{font-size:13px !important;line-height:1.4 !important}
+.process-overview{padding:26px !important}
+.process-overview .lead{max-width:980px}
+.market-actions{
+  grid-template-columns:1fr 1fr 1fr !important;
+}
+.programs-wrap{max-width:1180px;margin:0 auto}
+.program-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.status-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}
+.status-pill.dev{background:#edf3ff;color:#244f9e}
+.status-pill.live{background:#eaf7ef;color:#1f7444}
+.status-pill.stop{background:#fff0f0;color:#a92f2f}
+.program-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.program-table th,.program-table td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+.program-table th{font-size:12px;color:var(--muted);background:#f7f9fc}
+.program-table tr:last-child td{border-bottom:0}
+.program-name{font-weight:800;color:var(--blue)}
+.program-stage{font-size:13px;color:var(--muted)}
+.header-nav .nav-btn:nth-child(2){order:0}
+@media(max-width:1000px){
+  .process-flow{grid-template-columns:1fr 1fr !important}
+  .market-actions{grid-template-columns:1fr !important}
+}
+
+
+.step-kicker{font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+
+
+/* v14 — Step 3 research */
+#market .stage-head{margin-bottom:14px}
+#market .market-blue-intro{
+  background:var(--blueSoft);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:24px;
+  margin:-1px -1px 22px;
+}
+#market .market-blue-intro h1{margin:4px 0 10px}
+#market .market-blue-intro .lead{margin-bottom:0}
+.recommendation-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.btn.ghost{
+  background:transparent;
+  color:var(--blue);
+  border:1px solid var(--line);
+}
+.btn.ghost:hover{background:var(--blueSoft)}
+.recommendation-note{margin-top:10px;color:#1f7444;font-weight:700}
+.market-actions.two-actions{
+  grid-template-columns:1fr 1fr !important;
+}
+@media(max-width:800px){
+  .market-actions.two-actions{grid-template-columns:1fr !important}
+}
+
+
+/* v15 — completion states */
+.menu-done{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:20px;
+  height:20px;
+  margin-left:8px;
+  border-radius:50%;
+  background:#21834b;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  vertical-align:middle;
+}
+#market .market-blue-intro{
+  border-radius:0 !important;
+}
+
+
+#market .market-blue-intro{
+  border:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  padding:24px !important;
+}
+
+
+
+
+
+/* v16 — one compact completion mark per completed stage */
+.proto-link .mini-check,
+.stage-box .mini-check{
+  display:inline-block;
+  margin-left:6px;
+  color:#21834b;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+  background:transparent;
+  width:auto;
+  height:auto;
+  border-radius:0;
+}
+.menu-done{display:none !important}
+
+
+/* v17 — fixed completion-check column in left navigation */
+.proto-link,
+.stage-box{
+  position:relative;
+  padding-right:34px !important;
+}
+.proto-link > .mini-check,
+.stage-box > .mini-check{
+  position:absolute !important;
+  right:10px !important;
+  top:14px !important;
+  margin:0 !important;
+  width:14px !important;
+  height:14px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  color:#21834b !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+  line-height:14px !important;
+  background:transparent !important;
+  border-radius:0 !important;
+}
+
+
+</style>
+</head>
+<body><div class="topline"></div><div class="shell">
+<header><div class="brand" onclick="go('home')" style="cursor:pointer" title="На главную"><div class="logo">ДПО</div><div>Цифровая фабрика ДПО</div></div><nav><button class="btn" onclick="openM('org')">Моя организация</button><button class="btn" onclick="go('programs')">Мои программы</button><button class="btn" onclick="openM('team')">Моя команда</button></nav></header>
+<main>
+<section id="home" class="section active">
+<div class="hero"><div class="eyebrow">ИИ-система разработки и масштабирования образовательных программ</div><h1>От идеи программы до готового образовательного продукта</h1><p class="lead">Исследуйте рынок, спроектируйте программу, рассчитайте экономику, подготовьте документы, учебно-методические материалы и продвижение в едином рабочем процессе.</p></div>
+
+<h2>С чего начнём?</h2><p class="lead">Выберите ситуацию, которая лучше всего описывает вашу исходную точку.</p>
+<div class="grid">
+<div class="card entry" onclick="go('idea')"><div><h3>Хочу превратить свою экспертизу в программу</h3><p class="copy">Я знаю, чему могу научить, но пока не определил точную тему, аудиторию и формат программы.</p></div><div class="arrow">→</div></div>
+<div class="card entry" onclick="future('Есть конкретная тема программы','В полной версии система начнёт с формирования концепции и её проверки через исследование рынка и конкурентного окружения.')"><div><h3>У меня уже есть конкретная тема программы</h3><p class="copy">Тема сформулирована. Нужно проверить её востребованность и превратить в конкурентоспособный образовательный продукт.</p></div><div class="arrow">→</div></div>
+<div class="card entry" onclick="future('Есть запрос корпоративного заказчика','B2B-сценарий начнётся с уточнения задачи заказчика, формирования концепции и проверки параметров программы, затем перейдёт к проектированию и расчёту экономики.')"><div><h3>У меня есть запрос корпоративного заказчика</h3><p class="copy">Организации нужно обучить сотрудников под конкретную бизнес-задачу или потребность.</p></div><div class="arrow">→</div></div>
+</div>
+</section>
+
+<section id="idea" class="section page">
+<div class="backline"><button class="btn" onclick="go('home')">← На главную</button></div>
+<div class="panel"><div class="eyebrow">Шаг 1 · Идея</div><h2>Расскажите о своей экспертизе и задумке</h2><p class="lead">Не нужно формулировать программу заранее. Опишите, в чём вы специалист, чему могли бы научить и для кого это может быть полезно.</p>
+<textarea id="ideaText" placeholder="Например: Я много лет занимаюсь маркетингом образовательных услуг. Могла бы научить сотрудников вузов проектировать продвижение программ ДПО, но пока не понимаю, какой объём и содержание будут востребованы."></textarea>
+<div class="chips"><button class="chip" onclick="fill('Я специалист в маркетинге образовательных услуг и хочу превратить свою экспертизу в программу ДПО.')">Я специалист в...</button><button class="chip" onclick="fill('Я мог бы научить сотрудников вузов продвигать образовательные программы и набирать слушателей.')">Я мог бы научить...</button><button class="chip" onclick="fill('Хочу сделать программу для руководителей и сотрудников подразделений ДПО.')">Хочу сделать программу для...</button></div>
+<button class="btn primary" onclick="generateConcept()">Развить идею</button><p class="small">Учебный MVP: демонстрационный сценарий без подключения LLM API.</p></div></section>
+
+<section id="concept" class="section">
+<div class="proto-layout">
+  <aside class="proto-sidebar">
+    <div class="proto-group-title">Проектирование программы</div>
+    <div class="proto-link" onclick="go('idea')">Идея <span class="mini-check">✓</span>
+      <div class="comment-mini" onclick="event.stopPropagation();openComments('Идея')">Комментарии <span id="cc-idea">0</span></div>
+    </div>
+    <div class="proto-link active">Концепция
+      <div class="comment-mini" onclick="event.stopPropagation();openComments('Концепция')">Комментарии <span id="cc-concept">0</span></div>
+    </div>
+    <div class="proto-link" onclick="go('market')">Исследование рынка
+      <div class="comment-mini" onclick="event.stopPropagation();openComments('Исследование рынка')">Комментарии <span>0</span></div>
+    </div>
+
+    <div class="proto-group-title" style="margin-top:22px">Разработка программы</div>
+    <div class="parallel-note">Все этапы доступны параллельно</div>
+    <div class="proto-link" onclick="future('Архитектура программы','Структура, модули, формат и результаты обучения.')">Архитектура программы<div class="comment-mini">Комментарии <span>0</span></div></div>
+    <div class="proto-link" onclick="openM('team')">Команда и эксперты<div class="comment-mini">Комментарии <span>0</span></div></div>
+    <div class="proto-link" onclick="openM('economy')">Экономика<div class="comment-mini">Комментарии <span>0</span></div></div>
+
+    <div class="proto-group-title" style="margin-top:22px">Рабочая программа</div>
+    <div class="proto-link" onclick="openM('program')">Оформление рабочей программы<div class="comment-mini">Комментарии <span>0</span></div></div>
+    <div class="proto-link" onclick="openM('approval')">Утверждение рабочей программы<div class="comment-mini">Комментарии <span>0</span></div></div>
+
+    <div class="proto-sep"></div>
+    <div class="proto-group-title">Запуск программы</div>
+    <div class="parallel-note">Все направления доступны параллельно</div>
+    <div class="proto-link" onclick="openM('materials')">Учебно-методические материалы<div class="comment-mini">Комментарии <span>0</span></div></div>
+    <div class="proto-link" onclick="openM('promotion')">Продвижение и продажи<div class="comment-mini">Комментарии <span>0</span></div></div>
+    <div class="proto-link" onclick="openM('legal')">Юридические и организационные документы<div class="comment-mini">Комментарии <span>0</span></div></div>
+  </aside>
+
+  <div>
+    <div class="backline"><button class="btn" onclick="go('idea')">← К идее</button></div>
+    <div class="panel">
+      <div class="concept-toolbar">
+        <div class="eyebrow">Шаг 2 · Концепция</div>
+        <button class="btn comment-top" onclick="openComments('Концепция')">Комментарии <span id="conceptTopCount">0</span></button>
+      </div>
+      <h2 style="font-size:31px;margin-bottom:8px">Возможная концепция программы</h2>
+      <p class="lead" style="margin-top:0">Ниже представлена сгенерированная концепция программы. Вы можете доработать её с помощью ИИ или отредактировать вручную, изменив текст прямо на странице.</p>
+
+      <div id="conceptArea" class="result-grid">
+        <div class="card info-inner concept-long">
+          <div class="kicker">Рабочее название</div>
+          <div id="programTitle" class="value concept-field">Маркетинг образовательных программ: от исследования аудитории до набора слушателей</div>
+          <p id="c1" class="copy concept-field">Программа предназначена для сотрудников образовательных организаций, которые участвуют в создании и продвижении программ дополнительного профессионального образования. Она связывает проектирование образовательного продукта с исследованием аудитории и маркетинговой логикой.</p>
+          <p id="c2" class="copy concept-field">Слушатели пройдут путь от анализа потребностей и конкурентной среды до формирования ценностного предложения, упаковки программы и выбора каналов продвижения. Работа строится вокруг реальных образовательных продуктов и задач набора.</p>
+          <p id="c3" class="copy concept-field">Результатом станет проект системы продвижения собственной программы: с определённой аудиторией, позиционированием, ключевыми сообщениями и логикой коммуникации со слушателем.</p>
+        </div>
+
+        <div class="card info-inner">
+          <div class="kicker">Предполагаемая аудитория</div>
+          <div id="audience" class="value concept-field">Руководители и сотрудники ДПО, маркетологи и руководители образовательных проектов</div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+          <div class="kicker">Решаемая проблема</div>
+          <p id="problem" class="copy concept-field">Продвижение часто начинается после разработки программы и не связано с анализом спроса.</p>
+          <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+          <div class="kicker">Ценность</div>
+          <p id="valueText" class="copy concept-field">Проектировать программу с учётом рынка и выстраивать путь от потребности аудитории до набора.</p>
+        </div>
+      </div>
+
+      <div id="editModeNote" class="mode-note" style="display:none">Режим ручного редактирования включён. Нажмите на любой текст концепции выше и измените его прямо на странице.</div>
+      <div id="aiEdit" style="display:none;margin-top:16px">
+        <textarea id="aiInstruction" placeholder="Опишите ИИ, что нужно изменить..."></textarea>
+        <div class="actions"><button class="btn primary" onclick="fakeAI()">Переработать с ИИ</button><button class="btn" onclick="cancelAIMode()">Отменить</button></div>
+      </div>
+      <div id="manualActions" class="actions" style="display:none"><button class="btn primary" onclick="saveInlineEdit()">Сохранить изменения</button><button class="btn" onclick="cancelManualEdit()">Отменить</button></div>
+      <div id="conceptMainActions" class="actions">
+        <button id="aiModeBtn" class="btn ai" onclick="startAIMode()">Попросить ИИ доработать</button>
+        <button id="manualModeBtn" class="btn manual" onclick="startManualEdit()">Редактировать текст вручную</button>
+        <button id="approveConceptBtn" class="btn primary" onclick="conceptApprovalV13()">Утвердить концепцию</button>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="market" class="section"><div class="workspace">
+<aside class="sidebar">
+<div class="proto-group-title">Проектирование программы</div>
+<div class="proto-link" onclick="go('idea')">Идея <span class="mini-check">✓</span>
+  <div class="comment-mini" onclick="event.stopPropagation();openComments('Идея')">Комментарии <span id="cc-idea-market">0</span></div>
+</div>
+<div class="proto-link" onclick="go('concept')">Концепция <span class="mini-check">✓</span>
+  <div class="comment-mini" onclick="event.stopPropagation();openComments('Концепция')">Комментарии <span id="cc-concept-market">0</span></div>
+</div>
+<div id="m1" class="stage-box current" onclick="go('market')">Исследование рынка<div class="comment-link" onclick="event.stopPropagation();openComments('Исследование рынка')"><span>Комментарии</span><span class="comment-count" id="cc-m1">0</span></div></div>
+
+<div class="proto-group-title" style="margin-top:22px">Разработка программы</div>
+    <div class="parallel-note">Все этапы доступны параллельно</div>
+<div class="stage-menu">
+<div id="m2" class="stage-box" onclick="future('Архитектура программы','Структура, модули, формат и результаты обучения.')">Архитектура программы<div class="comment-link" onclick="event.stopPropagation();openComments('Архитектура программы')"><span>Комментарии</span><span class="comment-count" id="cc-m2">0</span></div></div>
+<div id="m3" class="stage-box" onclick="openM('team')">Команда и эксперты<div class="comment-link" onclick="event.stopPropagation();openComments('Команда и эксперты')"><span>Комментарии</span><span class="comment-count" id="cc-m3">0</span></div></div>
+<div id="m4" class="stage-box" onclick="openM('economy')">Экономика<div class="comment-link" onclick="event.stopPropagation();openComments('Экономика')"><span>Комментарии</span><span class="comment-count" id="cc-m4">0</span></div></div>
+</div>
+
+<div class="proto-group-title" style="margin-top:22px">Рабочая программа</div>
+<div id="m5" class="stage-box" onclick="openM('program')">Оформление рабочей программы<div class="comment-link" onclick="event.stopPropagation();openComments('Рабочая программа')"><span>Комментарии</span><span class="comment-count" id="cc-m5">0</span></div></div>
+<div id="m6" class="stage-box" onclick="openM('approval')">Утверждение рабочей программы<div class="comment-link" onclick="event.stopPropagation();openComments('Согласование')"><span>Комментарии</span><span class="comment-count" id="cc-m6">0</span></div></div>
+
+<div class="after">Запуск программы</div>
+<div class="parallel-note">Все направления доступны параллельно</div>
+<div class="subbox" onclick="openM('materials')"><strong>Учебно-методические материалы</strong><ul><li>УМК и презентации</li><li>видео и задания</li><li>тесты</li><li>онлайн-курс в LMS</li></ul></div>
+<div class="subbox" onclick="openM('promotion')"><strong>Продвижение и продажи</strong><ul><li>сайт и лендинг</li><li>соцсети и реклама</li><li>email</li><li>коммерческие материалы</li></ul></div>
+<div class="subbox" onclick="openM('legal')"><strong>Юридические и организационные документы</strong><ul><li>договоры</li><li>документы об обучении</li><li>согласия и заявления</li></ul></div>
+</aside>
+
+<div>
+<div class="stage-head">
+<div class="actions"><button class="btn" onclick="go('concept')">← К концепции</button></div>
+</div>
+
+<div class="panel">
+<div class="market-blue-intro">
+  <div class="eyebrow">Шаг 3 · Исследование рынка</div>
+  <h2 style="font-size:31px;margin-bottom:8px">Исследование рынка</h2>
+  <p class="lead" style="margin-top:0">Проверим утверждённую концепцию на рынке: оценим спрос, целевую аудиторию, конкурентов, позиционирование, стоимость и форматы. По результатам исследования вы сможете принять решение о дальнейшей разработке программы.</p>
+</div>
+
+<div class="feature-grid">
+<div class="card info-inner"><h3>Что анализирует ИИ</h3><ul class="clean"><li>аналогичные программы и конкурентов</li><li>спрос и целевую аудиторию</li><li>цены и продолжительность</li><li>форматы обучения</li><li>содержание и позиционирование</li><li>актуальные тенденции</li></ul></div>
+<div class="card info-inner"><h3>Что получит автор</h3><ul class="clean"><li>подробный аналитический отчёт</li><li>карту конкурентного поля</li><li>оценку спроса и сегментов аудитории</li><li>рекомендации по позиционированию</li><li>вывод о целесообразности дальнейшей разработки</li></ul></div>
+</div>
+
+<div class="notice">Учебный MVP: реальный веб-поиск и LLM API пока не подключены. Кнопка демонстрирует будущую логику исследования и принятия решения.</div>
+
+<div class="actions">
+<button id="runResearchBtn" class="btn ai" onclick="runResearch()">Провести исследование</button>
+</div>
+
+<div id="marketResult" class="market-result">
+  <div class="market-summary">
+    <div class="eyebrow">Краткий отчёт ИИ</div>
+    <h3>Концепция имеет рыночный потенциал, но требует уточнения позиционирования</h3>
+    <p class="copy">На рынке присутствуют программы по маркетингу образования и управлению ДПО, однако их содержание часто разделяет продуктовую разработку и продвижение. Потенциальная точка отстройки — связать исследование спроса, проектирование программы и маркетинг в едином процессе.</p>
+    <div class="market-verdict">
+      <div class="verdict-card"><strong>Спрос</strong><p class="copy">Потенциально подтверждается для сотрудников ДПО, руководителей образовательных проектов и маркетологов образовательных организаций.</p></div>
+      <div class="verdict-card"><strong>Конкурентная среда</strong><p class="copy">Конкуренция есть; требуется более чёткое позиционирование и практический результат обучения.</p></div>
+      <div class="verdict-card"><strong>Рекомендация</strong><p class="copy">Продолжить разработку после уточнения формата, ценностного предложения и состава практических результатов.</p></div>
+    </div>
+    <div class="pdf-report">
+      <button class="btn" onclick="future('Подробный аналитический отчёт · PDF','В полной версии ИИ сформирует подробный отчёт с источниками, картой конкурентов, сравнением цен и форматов, анализом целевой аудитории и обоснованием рекомендации.')">Открыть подробный отчёт PDF</button>
+      <span class="small">В MVP показана логика формирования отчёта; реальный PDF будет генерироваться после подключения ИИ и веб-поиска.</span>
+    </div>
+<div class="recommendation-actions">
+  <button class="btn ghost" onclick="ignoreMarketRecommendations(this)">Продолжить без изменений концепции</button>
+  <button id="applyRecommendationsBtn" class="btn ai" onclick="applyMarketRecommendations()">Принять рекомендации и обновить концепцию с ИИ</button>
+</div>
+<div id="recommendationAppliedNote" class="small recommendation-note" style="display:none">
+  Рекомендации учтены: ИИ обновил концепцию программы
+</div>
+
+  </div>
+
+  <h3 style="margin-top:24px">Решение автора по результатам исследования</h3>
+  <div class="market-actions two-actions">
+    <button id="researchStopBtn" class="btn danger" onclick="stopProgram()">Не продолжать разработку</button>
+    <button id="researchGoBtn" class="btn success" onclick="acceptResearch()">Перейти к разработке программы</button>
+  </div>
+</div>
+</div>
+</div>
+</div></section>
+
+<section id="programs" class="section page">
+  <div class="programs-wrap">
+    <div class="eyebrow">Рабочее пространство автора</div>
+    <h1>Мои программы</h1>
+    <p class="lead">Все программы, разработку которых вы начинали в «Цифровой фабрике ДПО». Цвет показывает текущее состояние проекта.</p>
+
+    <div class="program-toolbar">
+      <span class="status-pill dev">● В разработке</span>
+      <span class="status-pill live">● Утверждена и реализуется</span>
+      <span class="status-pill stop">● Не разрабатывается</span>
+    </div>
+
+    <table class="program-table">
+      <thead><tr><th>Программа</th><th>Статус</th><th>Текущий этап</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="program-name">ИИ в образовательном маркетинге</div><div class="program-stage">ДПО · повышение квалификации</div></td>
+          <td><span class="status-pill dev">● В разработке</span></td>
+          <td>Исследование рынка</td>
+          <td><button class="btn" onclick="go('market')">Открыть</button></td>
+        </tr>
+        <tr>
+          <td><div class="program-name">Управление образовательными продуктами</div><div class="program-stage">ДПО · профессиональная переподготовка</div></td>
+          <td><span class="status-pill dev">● В разработке</span></td>
+          <td>Экономика</td>
+          <td><button class="btn" onclick="future('Программа в разработке','Пример проекта на этапе параллельного проектирования программы.')">Открыть</button></td>
+        </tr>
+        <tr>
+          <td><div class="program-name">Цифровой маркетинг для образовательных организаций</div><div class="program-stage">ДПО · повышение квалификации</div></td>
+          <td><span class="status-pill live">● Утверждена и реализуется</span></td>
+          <td>Запуск программы</td>
+          <td><button class="btn" onclick="future('Утверждённая программа','Пример программы, прошедшей согласование и находящейся на этапе реализации.')">Открыть</button></td>
+        </tr>
+        <tr>
+          <td><div class="program-name">Социальные сети для преподавателя</div><div class="program-stage">ДПО · краткосрочная программа</div></td>
+          <td><span class="status-pill stop">● Не разрабатывается</span></td>
+          <td>Разработка прекращена после исследования рынка</td>
+          <td><button class="btn" onclick="future('Разработка прекращена','По результатам предпроектного анализа принято решение не продолжать разработку программы.')">Открыть</button></td>
+        </tr>
+        <tr>
+          <td><div class="program-name">Проектирование программ ДПО с ИИ</div><div class="program-stage">ДПО · повышение квалификации</div></td>
+          <td><span class="status-pill dev">● В разработке</span></td>
+          <td>Оформление рабочей программы</td>
+          <td><button class="btn" onclick="future('Программа в разработке','Пример проекта на этапе подготовки рабочей программы.')">Открыть</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+<footer>Учебный интерактивный MVP · палитра ориентирована на официальную айдентику Московского университета; неподключённые функции обозначены как прототипы.</footer>
+</div>
+
+
+
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeM()"><div class="modal-card"><div class="modal-head"><div><div class="eyebrow">Прототип функции</div><h2 id="mt"></h2></div><button class="close" onclick="closeM()">✕</button></div><div id="mb"></div></div></div>
+<script>
+const sections=[...document.querySelectorAll('.section')];
+function resetConceptApproval(){
+  const b = document.getElementById('approveConceptBtn') || document.getElementById('conceptApprove') || document.querySelector('[data-action="approve-concept"]');
+  if(!b) return;
+  b.classList.remove('approved','success','selected');
+  b.classList.add('primary');
+  b.innerHTML='Утвердить концепцию';
+  b.style.background='';
+  b.style.borderColor='';
+  b.style.color='';
+}
+
+function go(id){sections.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo({top:0,behavior:'smooth'})}
+function fill(t){ideaText.value=t}function generateConcept(){if(!ideaText.value.trim())ideaText.value='Я специалист в маркетинге образовательных услуг и хочу создать программу ДПО.';go('concept')}
+function toggle(id){let x=document.getElementById(id);x.style.display=x.style.display==='none'?'block':'none'}
+
+let conceptSnapshot = {};
+function conceptFields(){ return [...document.querySelectorAll('.concept-field')]; }
+
+function setConceptButtonsDisabled(disabledExcept){
+  const ai=document.getElementById('aiModeBtn'), man=document.getElementById('manualModeBtn');
+  ai.disabled = disabledExcept==='manual';
+  man.disabled = disabledExcept==='ai';
+  ai.style.opacity = ai.disabled ? '.45' : '1';
+  man.style.opacity = man.disabled ? '.45' : '1';
+}
+
+function startAIMode(){
+  cancelManualEdit(true);
+  document.getElementById('aiEdit').style.display='block';
+  document.getElementById('aiModeBtn').disabled=false;
+  document.getElementById('manualModeBtn').disabled=true;
+  document.getElementById('manualModeBtn').style.opacity='.45';
+  document.getElementById('aiModeBtn').style.opacity='1';
+}
+
+function cancelAIMode(){
+  document.getElementById('aiEdit').style.display='none';
+  document.getElementById('aiInstruction').value='';
+  document.getElementById('aiModeBtn').disabled=false;
+  document.getElementById('manualModeBtn').disabled=false;
+  document.getElementById('aiModeBtn').style.opacity='1';
+  document.getElementById('manualModeBtn').style.opacity='1';
+}
+
+function startManualEdit(){
+  cancelAIMode();
+  conceptSnapshot={};
+  conceptFields().forEach(el=>{
+    conceptSnapshot[el.id]=el.innerHTML;
+    el.contentEditable='true';
+    el.classList.add('editable-active');
+  });
+  document.getElementById('editModeNote').style.display='block';
+  document.getElementById('manualActions').style.display='flex';
+  document.getElementById('manualModeBtn').disabled=false;
+  document.getElementById('aiModeBtn').disabled=true;
+  document.getElementById('aiModeBtn').style.opacity='.45';
+  document.getElementById('manualModeBtn').style.opacity='1';
+  document.getElementById('programTitle').focus();
+}
+
+function endManualMode(){
+  conceptFields().forEach(el=>{
+    el.contentEditable='false';
+    el.classList.remove('editable-active');
+  });
+  document.getElementById('editModeNote').style.display='none';
+  document.getElementById('manualActions').style.display='none';
+  document.getElementById('aiModeBtn').disabled=false;
+  document.getElementById('manualModeBtn').disabled=false;
+  document.getElementById('aiModeBtn').style.opacity='1';
+  document.getElementById('manualModeBtn').style.opacity='1';
+}
+
+function saveInlineEdit(){ endManualMode(); }
+
+function cancelManualEdit(silent=false){
+  if(Object.keys(conceptSnapshot).length){
+    conceptFields().forEach(el=>{ if(conceptSnapshot[el.id]!==undefined) el.innerHTML=conceptSnapshot[el.id]; });
+  }
+  endManualMode();
+  if(!silent) conceptSnapshot={};
+}
+
+function fakeAI(){
+  document.getElementById('aiEdit').style.display='none';
+  document.getElementById('aiModeBtn').disabled=false;
+  document.getElementById('manualModeBtn').disabled=false;
+  document.getElementById('aiModeBtn').style.opacity='1';
+  document.getElementById('manualModeBtn').style.opacity='1';
+  future('Запрос на доработку принят','В полной версии ИИ переработает все связанные элементы концепции с учётом комментария, а пользователь сможет сравнить новую версию с предыдущей.');
+}
+
+let conceptApproved=false;
+function handleConceptApproval(){
+  cancelAIMode();
+  endManualMode();
+  conceptApproved=true;
+  const b=document.getElementById('approveConceptBtn');
+  b.innerHTML='<span class="check">✓</span> Концепция утверждена';
+  b.classList.add('approved');
+  b.disabled=true;
+  setTimeout(()=>go('market'),500);
+}
+
+
+
+
+let researchCompleted=false;
+function runResearch(){
+  researchCompleted=true;
+  markStageDone('Исследование рынка');
+  const b=document.getElementById('runResearchBtn');
+  b.innerHTML='<span class="check">✓</span> Исследование проведено';
+  b.classList.add('approved');
+  const result=document.getElementById('marketResult');
+  result.classList.add('show');
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function acceptResearch(){
+  markStageDone('Исследование рынка');
+  const b=document.getElementById('researchGoBtn');
+  b.innerHTML='<span class="check">✓</span> Принято к проектированию';
+  b.classList.add('selected');
+  ['m2','m3','m4'].forEach(id=>{const el=document.getElementById(id); if(el) el.classList.add('current');});
+  setTimeout(()=>future('Концепция принята к проектированию','Следующий блок состоит из трёх параллельных взаимосвязанных процессов: архитектура программы, команда и эксперты, экономика.'),350);
+}
+function reviseConceptFromResearch(){
+  future('Доработка концепции с ИИ','Рекомендации исследования будут переданы в контекст концепции. После доработки автор снова утверждает концепцию, а затем повторно запускает исследование рынка.');
+  setTimeout(()=>{ closeM(); go('concept'); startAIMode(); document.getElementById('aiInstruction').value='Доработать концепцию с учётом результатов исследования рынка: уточнить позиционирование, формат, ценностное предложение и практический результат программы.'; },900);
+}
+function stopProgram(){
+  const b=document.getElementById('researchStopBtn');
+  b.innerHTML='<span class="check">✓</span> Разработка прекращена';
+  b.classList.add('selected');
+  setTimeout(()=>go('home'),650);
+}
+
+function openComments(stage){
+  document.getElementById('mt').textContent='Комментарии · '+stage;
+  document.getElementById('mb').innerHTML=`<p class="copy">Комментарии участников проекта к этому этапу.</p>
+    <textarea id="newComment" style="min-height:95px" placeholder="Оставить комментарий или замечание..."></textarea>
+    <div class="actions"><button class="btn primary" onclick="addComment('${stage.replace(/'/g,"\\'")}')">Добавить комментарий</button><button class="btn" onclick="closeM()">Закрыть</button></div>
+    <div class="notice">В полной версии комментарии будут связаны с участниками команды, датой, версией материала и уведомлениями.</div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function addComment(stage){
+  const input=document.getElementById('newComment');
+  if(!input || !input.value.trim()) return;
+  const map={'Исследование рынка':'m1','Архитектура программы':'m2','Команда и эксперты':'m3','Экономика':'m4','Рабочая программа':'m5','Согласование':'m6'};
+  const id=map[stage];
+  if(id){
+    const c=document.getElementById('cc-'+id);
+    if(c) c.textContent=String(Number(c.textContent||0)+1);
+  }
+  if(stage==='Концепция'){
+    ['cc-concept','cc-concept-market','conceptTopCount'].forEach(cid=>{
+      const el=document.getElementById(cid);
+      if(el) el.textContent=String(Number(el.textContent||0)+1);
+    });
+  }
+  if(stage==='Идея'){
+    ['cc-idea','cc-idea-market'].forEach(cid=>{
+      const el=document.getElementById(cid);
+      if(el) el.textContent=String(Number(el.textContent||0)+1);
+    });
+  }
+  closeM();
+}
+
+function openContact(name){
+  document.getElementById('mt').textContent=name;
+  document.getElementById('mb').innerHTML=`<p class="copy">Карточка участника проекта.</p><ul class="clean"><li>роль в проекте</li><li>рабочая электронная почта</li><li>внутренний профиль / мессенджер</li><li>назначенные задачи</li><li>комментарии и согласования</li></ul><div class="notice">Контактные данные в учебном MVP не подключены.</div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+const C={
+org:['Моя организация',`<p class="copy">Шаблоны и нормативы организации подключаются один раз и используются во всех проектах.</p><div class="org-list"><div class="org-item">✓ Шаблон рабочей программы</div><div class="org-item">✓ Шаблоны документов</div><div class="org-item">✓ Брендбук и логотип</div><div class="org-item">✓ Экономические нормативы</div><div class="org-item">○ Настройки LMS</div><div class="org-item">○ Другие источники данных</div></div>`],
+team:['Команда проекта',`<p class="copy">Подключайте специалистов к отдельным этапам и согласованиям. Имя участника — ссылка на карточку контакта.</p><div class="team-row"><span>Руководитель программы</span><a href="#" onclick="event.preventDefault();openContact('Иванова А.А.')" style="color:var(--blue)">Иванова А.А.</a></div><div class="team-row"><span>Методист</span><a href="#" onclick="event.preventDefault();openContact('Петрова Е.В.')" style="color:var(--blue)">Петрова Е.В.</a></div><div class="team-row"><span>Маркетолог</span><a href="#" onclick="event.preventDefault();openContact('Смирнов Д.О.')" style="color:var(--blue)">Смирнов Д.О.</a></div><div class="team-row"><span>Экономист</span><span>не назначен</span></div><button class="btn primary" style="margin-top:16px" onclick="openM('add')">+ Добавить специалиста</button>`],
+add:['Добавить специалиста',`<p class="copy">В полной версии здесь выбираются роль, этап проекта и способ учёта работы.</p><ul class="clean"><li>отдельная оплата</li><li>должностные обязанности</li><li>учёт в KPI</li><li>только согласование результата</li></ul>`],
+economy:['Экономика',`<ul class="clean"><li>ставки штатных преподавателей</li><li>гонорары приглашённых экспертов и pro bono участие</li><li>работа методиста и маркетолога</li><li>налоги и начисления</li><li>внутренние отчисления университету</li><li>организационные расходы</li><li>число слушателей</li></ul><p class="copy">Результат: себестоимость, точка безубыточности, минимальная и рекомендуемая цена, B2B-смета.</p>`],
+program:['Рабочая программа',`<p class="copy">Формирование документа по шаблону университета: результаты обучения, компетенции, учебный план, оценочные и методические материалы.</p>`],
+approval:['Согласование и утверждение',`<p class="copy">Защита программы, служебные документы, замечания, версии и окончательное утверждение.</p>`],
+materials:['Разработка учебно-методических материалов',`<ul class="clean"><li>УМК</li><li>презентации</li><li>видеоматериалы</li><li>практические задания</li><li>тесты и оценочные материалы</li><li>дополнительные материалы</li><li>сборка онлайн-курса в LMS</li></ul>`],
+promotion:['Продвижение и продажи',`<ul class="clean"><li>страница программы на сайте</li><li>лендинг</li><li>контент для социальных сетей</li><li>реклама</li><li>email-коммуникации</li><li>презентации</li><li>коммерческие предложения</li></ul>`],
+legal:['Юридические и организационные документы',`<ul class="clean"><li>проект договора со слушателем</li><li>проект договора с корпоративным заказчиком</li><li>проект документа о квалификации / обучении</li><li>согласие на обработку персональных данных</li><li>заявления и регистрационные формы</li><li>проекты приказов о зачислении и отчислении, если они предусмотрены процессами вуза</li></ul><div class="notice">Набор документов должен определяться правилами конкретной образовательной организации.</div>`]
+};
+function openM(k){let [t,b]=C[k];mt.textContent=t;mb.innerHTML=b;modal.classList.add('show')}function closeM(){modal.classList.remove('show')}
+function future(t,b){mt.textContent=t;mb.innerHTML=`<p class="copy">${b}</p><div class="notice">Прототип функции · дальнейшая разработка</div>`;modal.classList.add('show')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()})
+
+document.addEventListener('click', function(e){
+  const t=(e.target.innerText||e.target.textContent||'').trim().toLowerCase();
+  if(t==='внести изменения' || t==='изменить' || t.includes('применить изменения')){
+    setTimeout(resetConceptApproval, 50);
+  }
+});
+
+
+let conceptApprovedV13 = false;
+
+function conceptApprovalV13(){
+  const b=document.getElementById('approveConceptBtn');
+  if(conceptApprovedV13){
+    go('market');
+    return;
+  }
+  handleConceptApproval();
+  conceptApprovedV13=true;
+  markStageDone('Идея');
+  markStageDone('Концепция');
+  if(b){
+    b.classList.add('approved');
+    b.innerHTML='<span class="check">✓</span> Концепция утверждена · Далее';
+    b.style.background='#21834b';
+    b.style.borderColor='#21834b';
+    b.style.color='#fff';
+  }
+}
+
+function resetConceptApprovalV13(){
+  conceptApprovedV13=false;
+  const b=document.getElementById('approveConceptBtn');
+  if(!b) return;
+  b.classList.remove('approved');
+  b.innerHTML='Утвердить концепцию';
+  b.style.background='';
+  b.style.borderColor='';
+  b.style.color='';
+}
+
+document.addEventListener('click',function(e){
+  const t=(e.target.innerText||e.target.textContent||'').trim().toLowerCase();
+  if(t==='изменить' || t==='внести изменения' || t.includes('применить изменения')){
+    setTimeout(resetConceptApprovalV13,50);
+  }
+});
+
+
+function ignoreMarketRecommendations(btn){
+  if(btn){
+    btn.innerHTML='Продолжить без изменений концепции';
+  }
+}
+
+function applyMarketRecommendations(){
+  const b=document.getElementById('applyRecommendationsBtn');
+  if(b){
+    b.classList.add('approved');
+    b.style.background='#21834b';
+    b.style.borderColor='#21834b';
+    b.style.color='#fff';
+    b.innerHTML='<span class="check">✓</span> Рекомендации внесены в концепцию';
+  }
+
+  const note=document.getElementById('recommendationAppliedNote');
+  if(note) note.style.display='block';
+
+  // Update the concept fields already present in the prototype.
+  const updates = {
+    'c-name':'ИИ в образовательном маркетинге: проектирование и продвижение образовательных продуктов',
+    'c-aud':'Руководители и сотрудники подразделений ДПО, руководители образовательных проектов, преподаватели и маркетологи образовательных организаций',
+    'c-problem':'Разработка программ ДПО часто начинается без проверки спроса и конкурентного окружения, а продуктовая и маркетинговая логика подключается слишком поздно',
+    'c-value':'Практическая программа, объединяющая исследование спроса, проектирование образовательного продукта и его продвижение в едином процессе',
+    'c-format':'Практико-ориентированное обучение с разбором реальных образовательных продуктов, проектной работой и готовым проектом программы ДПО на выходе'
+  };
+  Object.entries(updates).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el){
+      if('value' in el) el.value=val;
+      else el.textContent=val;
+    }
+  });
+
+  // The concept has changed, so it must be approved again before the next research cycle.
+  if(typeof resetConceptApprovalV13==='function') resetConceptApprovalV13();
+}
+
+
+function markStageDone(stageLabel){
+  document.querySelectorAll('.proto-link,.stage-box').forEach(el=>{
+    const ownText=(el.childNodes[0]?.textContent || el.textContent || '').trim();
+    if(ownText.startsWith(stageLabel)){
+      if(el.querySelector('.mini-check,.menu-done')) return;
+      const tick=document.createElement('span');
+      tick.className='mini-check';
+      tick.textContent='✓';
+      const comments=el.querySelector('.comment-mini,.comment-link');
+      if(comments) el.insertBefore(tick,comments);
+      else el.appendChild(tick);
+    }
+  });
+}
+
+
+function completeStage(stageLabel){
+  markStageDone(stageLabel);
+}
+
+
+</script></body></html>
