@@ -838,31 +838,48 @@ function renderResearch(result){
   document.getElementById('marketResult').classList.add('show');
   document.getElementById('recommendationAppliedNote').style.display='none';
 }
+const FINDINGS_STORAGE_KEY='dpo-ai-factory-market-findings-v2';
+function cachedFindings(concept){
+  try{const x=JSON.parse(localStorage.getItem(FINDINGS_STORAGE_KEY)||'null');return x?.concept===concept && typeof x.findings==='string' && x.findings.length>30?x:null}catch{return null}
+}
 async function runResearch(){
   const status=document.getElementById('researchStatus');
   const button=document.getElementById('runResearchBtn');
-  if(!conceptApprovedV13){status.textContent='Сначала сформируйте и утвердите концепцию на предыдущем этапе.';return;}
+  if(!conceptApprovedV13){status.textContent='Сначала сформируйте и утвердите концепцию.';return;}
   const concept=approvedConceptText();
   if(concept.length<10){status.textContent='Не найдена утверждённая концепция.';return;}
-  if(!confirm('Запустить платное исследование рынка через Polza AI?'))return;
-  button.disabled=true;button.textContent='ИИ исследует рынок…';
-  status.textContent='Выполняется платный веб-поиск. Дождитесь ответа, не запускайте запрос повторно.';
+  let search=cachedFindings(concept);
+  if(!search && !confirm('Запустить платный веб-поиск конкурентов через Polza AI?'))return;
+  if(search && !confirm('Использовать уже сохранённый поиск и сформировать отчёт без повторного веб-поиска?'))return;
+  button.disabled=true;button.textContent='Исследование выполняется…';
   try{
-    const response=await fetch(DPO_API_URL,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'market_research',concept})
-    });
-    const result=await response.json();
-    if(!response.ok||!result.success||!result.research)throw new Error(result.details||result.error||'Сервис не вернул исследование');
-    renderResearch(result);
-    try{localStorage.setItem(RESEARCH_STORAGE_KEY,JSON.stringify(result));}
-    catch(error){console.warn('Исследование не сохранилось локально',error?.message);}
-    researchCompleted=true;
-    markStageDone('Исследование рынка');
-    status.textContent='Исследование получено. Проверьте сведения и источники перед принятием решения.';
+    async function api(body){
+      const response=await fetch(DPO_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const result=await response.json();
+      if(!response.ok||!result.success)throw new Error(result.details||result.error||'Ошибка Polza AI');
+      return result;
+    }
+    if(!search){
+      status.textContent='Этап 1 из 2: поиск конкурентов и источников. Не закрывайте страницу.';
+      search=await api({action:'market_search',concept});
+      if(!search.findings)throw new Error('Поиск не вернул данных');
+      localStorage.setItem(FINDINGS_STORAGE_KEY,JSON.stringify({concept,findings:search.findings,annotations:search.annotations||[],search_cost_rub:search.cost_rub}));
+    }
+    status.textContent='Этап 2 из 2: формирование аналитического отчёта без веб-поиска. Результаты поиска уже сохранены.';
+    const analysis=await api({action:'market_analyze',concept,findings:search.findings,annotations:search.annotations||[]});
+    const costA=typeof search.search_cost_rub==='number'?search.search_cost_rub:search.cost_rub;
+    const costB=analysis.cost_rub;
+    if(typeof costA==='number'&&typeof costB==='number')analysis.cost_rub=costA+costB;
+    else analysis.cost_rub=null;
+    analysis.annotations=search.annotations||[];
+    renderResearch(analysis);
+    try{localStorage.setItem(RESEARCH_STORAGE_KEY,JSON.stringify(analysis));}catch(e){console.warn('Не удалось сохранить отчёт',e?.message)}
+    researchCompleted=true;markStageDone('Исследование рынка');
+    status.textContent='Исследование готово. Проверьте сведения и источники.';
     document.getElementById('marketResult').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(error){status.textContent='Не удалось выполнить исследование: '+error.message;}
-  finally{button.disabled=false;button.textContent='Провести исследование повторно · платный поиск';}
+  }catch(error){
+    status.textContent='Не удалось выполнить исследование: '+error.message+(cachedFindings(concept)?' Результаты поиска сохранены — повторный запуск не будет повторять веб-поиск.':'');
+  }finally{button.disabled=false;button.textContent='Провести исследование повторно · платный поиск';}
 }
 function acceptResearch(){
   if(!researchCompleted){alert("Сначала проведите исследование рынка.");return;}
