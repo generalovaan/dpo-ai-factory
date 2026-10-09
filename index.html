@@ -249,7 +249,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 <div class="panel"><div class="eyebrow">Шаг 1 · Идея</div><h2>Расскажите о своей экспертизе и задумке</h2><p class="lead">Не нужно формулировать программу заранее. Опишите, в чём вы специалист, чему могли бы научить и для кого это может быть полезно.</p>
 <textarea id="ideaText" placeholder="Например: Я много лет занимаюсь маркетингом образовательных услуг. Могла бы научить сотрудников вузов проектировать продвижение программ ДПО, но пока не понимаю, какой объём и содержание будут востребованы."></textarea>
 <div class="chips"><button class="chip" onclick="fill('Я специалист в маркетинге образовательных услуг и хочу превратить свою экспертизу в программу ДПО.')">Я специалист в...</button><button class="chip" onclick="fill('Я мог бы научить сотрудников вузов продвигать образовательные программы и набирать слушателей.')">Я мог бы научить...</button><button class="chip" onclick="fill('Хочу сделать программу для руководителей и сотрудников подразделений ДПО.')">Хочу сделать программу для...</button></div>
-<button class="btn primary" onclick="generateConcept()">Развить идею</button><p class="small">Учебный MVP: демонстрационный сценарий без подключения LLM API.</p></div></section>
+<button id="generateConceptBtn" class="btn primary" onclick="generateConcept()">Сформировать концепцию с ИИ</button><p id="conceptGenerationStatus" class="small" role="status" aria-live="polite"></p><p class="small">Генерация концепции через Qwen / Polza AI. Остальные этапы пока демонстрационные.</p></div></section>
 
 <section id="concept" class="section">
 <div class="proto-layout">
@@ -489,7 +489,61 @@ function resetConceptApproval(){
 }
 
 function go(id){sections.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo({top:0,behavior:'smooth'})}
-function fill(t){ideaText.value=t}function generateConcept(){if(!ideaText.value.trim())ideaText.value='Я специалист в маркетинге образовательных услуг и хочу создать программу ДПО.';go('concept')}
+function fill(t){ideaText.value=t}
+const DPO_API_URL = 'https://dpo-ai-factory-api.antigeneral.workers.dev/';
+async function generateConcept(){
+  const idea = document.getElementById('ideaText').value.trim();
+  const status = document.getElementById('conceptGenerationStatus');
+  const button = document.getElementById('generateConceptBtn');
+  if(idea.length < 10 || idea.length > 2000){
+    status.textContent = 'Опишите идею программы: от 10 до 2000 символов.';
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'ИИ формирует концепцию…';
+  status.textContent = 'Отправляем описание в Qwen. Подождите ответа.';
+  try {
+    const response = await fetch(DPO_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({idea})
+    });
+    const result = await response.json();
+    if(!response.ok || !result.success || !result.concept){
+      throw new Error(result.details || result.error || 'Сервис не вернул концепцию');
+    }
+    // Create text nodes only: AI output must never be interpreted as HTML.
+    const area = document.getElementById('conceptArea');
+    area.innerHTML = '';
+    area.style.gridTemplateColumns = '1fr';
+    const card = document.createElement('div');
+    card.className = 'card info-inner concept-long';
+    const kicker = document.createElement('div');
+    kicker.className = 'kicker';
+    kicker.textContent = 'Концепция, сформированная ИИ';
+    const title = document.createElement('div');
+    title.id = 'programTitle';
+    title.className = 'value concept-field';
+    title.textContent = 'Предварительная концепция программы ДПО';
+    const content = document.createElement('div');
+    content.id = 'c1';
+    content.className = 'copy concept-field';
+    content.style.whiteSpace = 'pre-wrap';
+    content.style.lineHeight = '1.65';
+    content.textContent = result.concept;
+    card.append(kicker, title, content);
+    area.append(card);
+    conceptSnapshot = {};
+    if(typeof resetConceptApprovalV13 === 'function') resetConceptApprovalV13();
+    status.textContent = '';
+    go('concept');
+  } catch(error){
+    status.textContent = 'Не удалось сформировать концепцию: ' + error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Сформировать концепцию с ИИ';
+  }
+}
 function toggle(id){let x=document.getElementById(id);x.style.display=x.style.display==='none'?'block':'none'}
 
 let conceptSnapshot = {};
