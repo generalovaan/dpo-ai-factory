@@ -290,7 +290,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 <div class="panel"><div class="eyebrow">Шаг 1 · Идея</div><h2>Расскажите о своей экспертизе и задумке</h2><p class="lead">Не нужно формулировать программу заранее. Опишите, в чём вы специалист, чему могли бы научить и для кого это может быть полезно.</p>
 <textarea id="ideaText" placeholder="Например: Я много лет занимаюсь маркетингом образовательных услуг. Могла бы научить сотрудников вузов проектировать продвижение программ ДПО, но пока не понимаю, какой объём и содержание будут востребованы."></textarea>
 <div class="chips"><button class="chip" onclick="fill('Я специалист в маркетинге образовательных услуг и хочу превратить свою экспертизу в программу ДПО.')">Я специалист в...</button><button class="chip" onclick="fill('Я мог бы научить сотрудников вузов продвигать образовательные программы и набирать слушателей.')">Я мог бы научить...</button><button class="chip" onclick="fill('Хочу сделать программу для руководителей и сотрудников подразделений ДПО.')">Хочу сделать программу для...</button></div>
-<button id="generateConceptBtn" class="btn primary" onclick="generateConcept()">Сформировать концепцию с ИИ</button><p id="conceptGenerationStatus" class="small" role="status" aria-live="polite"></p><p class="small">Генерация концепции через Qwen / Polza AI. Исследование рынка использует платный веб-поиск; последующие этапы пока демонстрационные.</p></div></section>
+<button id="generateConceptBtn" class="btn primary" onclick="generateConcept()">Сформировать концепцию с ИИ</button><p id="conceptGenerationStatus" class="small" role="status" aria-live="polite"></p><p class="small">Генерация концепции через Qwen / Polza AI. Проект автоматически сохраняется в этом браузере. Исследование рынка использует платный веб-поиск; последующие этапы пока демонстрационные.</p></div></section>
 
 <section id="concept" class="section">
 <div class="proto-layout">
@@ -523,19 +523,51 @@ function stripMarkdown(t){
   return t.replace(/\\([*_.#])/g,'$1').replace(/\*\*/g,'').replace(/^\s*[-*]\s+/gm,'• ').replace(/\r/g,'').trim();
 }
 function splitConcept(raw){
-  let text=String(raw||'').replace(/\r/g,'').replace(/\\([.*])/g,'$1');
-  // Models sometimes return all numbered sections on one line.
-  const hits=[];
-  const re=/(?:^|\s)([1-8])\s*[.．)]\s*(?:\*\*)?\s*(Рабочее название программы|Целевая аудитория|Образовательная потребность|Цель программы|Планируемые результаты обучения|Предварительные параметры программы|Ценностное предложение|Вопросы для уточнения)(?:\*\*)?\s*[:—-]?/gim;
-  let m;
-  while((m=re.exec(text))!==null){hits.push({num:Number(m[1]),start:m.index,end:re.lastIndex});}
+  const text=String(raw||'').replace(/\r/g,'').replace(/\\([.*])/g,'$1');
   const parts=Array(8).fill('');
-  for(let i=0;i<hits.length;i++){
-    const h=hits[i];
-    parts[h.num-1]=stripMarkdown(text.slice(h.end,i+1<hits.length?hits[i+1].start:text.length));
+  const aliases=[
+    /(?:рабочее\s+)?название\s+программы|наименование\s+программы|название\s+курса/i,
+    /целев(?:ая|ую)\s+аудитори(?:я|ю)|для\s+кого\s+программа/i,
+    /образовательн(?:ая|ую)\s+потребност(?:ь|и)|актуальност(?:ь|и)\s+программы|проблема\s*,?\s*которую\s+решает/i,
+    /цел(?:ь|и)\s+программы|цель\s+обучения/i,
+    /планируемые\s+результаты\s+обучения|результаты\s+обучения|ожидаемые\s+результаты/i,
+    /предварительные\s+параметры\s+программы|параметры\s+программы|формат\s+и\s+продолжительность/i,
+    /ценностное\s+предложение|уникальное\s+предложение|конкурентные\s+преимущества/i,
+    /вопросы\s+для\s+уточнения|уточняющие\s+вопросы|вопросы\s+к\s+автору/i
+  ];
+  const matches=[];
+  const lines=text.split('\n');
+  let offset=0;
+  for(const line of lines){
+    const trimmed=line.trim();
+    const normalized=trimmed.replace(/^#{1,6}\s*/,'').replace(/\*\*/g,'').replace(/^\s*(?:\d{1,2}\s*[.)．:]|[-•])\s*/,'').trim();
+    const candidate=normalized.split(/\s*[:—–]\s*/)[0].trim();
+    if(candidate.length<=100){
+      const idx=aliases.findIndex(re=>re.test(candidate));
+      if(idx>=0)matches.push({idx,start:offset,end:offset+line.length,inline:normalized.slice(candidate.length).replace(/^\s*[:—–]\s*/,'').trim()});
+    }
+    offset+=line.length+1;
   }
-  if(hits.length<5){
-    parts[0]='Предварительная концепция программы ДПО';
+  if(matches.length<4){
+    // Accept numbered sections even when the model puts headings in a single paragraph.
+    const re=/(?:^|\s)([1-8])\s*[.．)]\s*(?:\*\*)?\s*(Рабочее название программы|Целевая аудитория|Образовательная потребность|Цель программы|Планируемые результаты обучения|Предварительные параметры программы|Ценностное предложение|Вопросы для уточнения)(?:\*\*)?\s*[:—–-]?/gim;
+    let m;const hits=[];
+    while((m=re.exec(text))!==null)hits.push({idx:Number(m[1])-1,start:m.index,end:re.lastIndex});
+    if(hits.length>=4){
+      hits.forEach((h,i)=>{parts[h.idx]=stripMarkdown(text.slice(h.end,hits[i+1]?.start??text.length));});
+      return parts;
+    }
+  }
+  if(matches.length){
+    matches.forEach((h,i)=>{
+      const content=(h.inline? h.inline+'\n':'')+text.slice(h.end,matches[i+1]?.start??text.length);
+      parts[h.idx]=stripMarkdown(content);
+    });
+  }
+  if(matches.length<4 && parts.filter(Boolean).length<4){
+    // Preserve the original answer rather than falsely presenting it as a specific section.
+    parts.fill('');
+    parts[0]='Концепция программы ДПО — требуется уточнение структуры';
     parts[2]=stripMarkdown(text);
   }
   return parts;
@@ -592,7 +624,7 @@ async function generateConcept(){
   status.textContent='Формируем концепцию. Дождитесь результата.';
   try{
     const raw=await requestConcept(idea);
-    lastIdea=idea;displayConcept(raw);status.textContent='';go('concept');
+    lastIdea=idea;displayConcept(raw);saveProject();status.textContent='';go('concept');
   }catch(error){status.textContent='Не удалось сформировать концепцию: '+error.message;}
   finally{button.disabled=false;button.textContent='Сформировать концепцию с ИИ';}
 }
@@ -680,7 +712,7 @@ function endManualMode(){
   document.getElementById('manualModeBtn').style.opacity='1';
 }
 
-function saveInlineEdit(){ endManualMode(); conceptSnapshot={}; conceptApprovedV13=false; resetConceptApprovalV13(); researchCompleted=false; document.getElementById("marketResult").classList.remove("show"); }
+function saveInlineEdit(){ endManualMode(); conceptSnapshot={}; conceptApprovedV13=false; resetConceptApprovalV13(); researchCompleted=false; document.getElementById("marketResult").classList.remove("show"); saveProject(); }
 
 function cancelManualEdit(silent=false){
   if(Object.keys(conceptSnapshot).length){
@@ -1041,5 +1073,80 @@ function completeStage(stageLabel){
 }
 
 
-document.addEventListener("DOMContentLoaded",restoreSavedResearch);
+// Local autosave: one active project in this browser, no server-side storage.
+const PROJECT_STORAGE_KEY='dpo-ai-factory-active-project-v1';
+let projectSaveTimer=null;
+let restoringProject=false;
+function projectState(){
+  return {
+    version:1, idea:document.getElementById('ideaText').value,
+    lastIdea, lastConceptText,
+    fields:conceptFields().map(el=>el.textContent),
+    approved:conceptApprovedV13,
+    questions:currentQuestions,
+    answers:currentQuestions.map((_,i)=>document.getElementById('clarifyAnswer'+i)?.value||''),
+    clarificationVisible:document.getElementById('clarificationBox').style.display!=='none',
+    researchCompleted, lastResearchText,lastResearchAnnotations,
+    researchDecision:document.getElementById('researchGoBtn').classList.contains('selected')?'go':document.getElementById('researchStopBtn').classList.contains('selected')?'stop':null,
+    savedAt:new Date().toISOString()
+  };
+}
+function saveProject(){
+  if(restoringProject)return;
+  try{localStorage.setItem(PROJECT_STORAGE_KEY,JSON.stringify(projectState()));}
+  catch(e){console.warn('Не удалось сохранить проект:',e?.message);}
+}
+function queueProjectSave(){
+  if(restoringProject)return;
+  clearTimeout(projectSaveTimer);
+  projectSaveTimer=setTimeout(saveProject,400);
+}
+function restoreProject(){
+  let data;
+  try{data=JSON.parse(localStorage.getItem(PROJECT_STORAGE_KEY)||'null');}catch{return;}
+  if(!data||data.version!==1)return;
+  restoringProject=true;
+  try{
+    if(typeof data.idea==='string')document.getElementById('ideaText').value=data.idea;
+    lastIdea=typeof data.lastIdea==='string'?data.lastIdea:'';
+    if(typeof data.lastConceptText==='string' && data.lastConceptText.trim()){
+      displayConcept(data.lastConceptText,false);
+      if(Array.isArray(data.fields)&&data.fields.length===7){
+        conceptFields().forEach((el,i)=>{if(typeof data.fields[i]==='string')el.textContent=data.fields[i];});
+      }
+      if(Array.isArray(data.answers))data.answers.forEach((answer,i)=>{
+        const el=document.getElementById('clarifyAnswer'+i);
+        if(el && typeof answer==='string')el.value=answer;
+      });
+      document.getElementById('clarificationBox').style.display=data.clarificationVisible?'block':'none';
+      if(data.approved){
+        conceptApprovedV13=true;
+        conceptApproved=true;
+        const btn=document.getElementById('approveConceptBtn');
+        btn.classList.add('approved');
+        btn.textContent='✓ Концепция утверждена · Далее';
+        markStageDone('Идея');markStageDone('Концепция');
+      }
+    }
+    if(data.researchCompleted && typeof data.lastResearchText==='string' && data.lastResearchText){
+      renderResearch({research:data.lastResearchText,annotations:data.lastResearchAnnotations||[]});
+      researchCompleted=true;
+      markStageDone('Исследование рынка');
+    }
+    if(data.researchDecision==='go')document.getElementById('researchGoBtn').classList.add('selected');
+    if(data.researchDecision==='stop')document.getElementById('researchStopBtn').classList.add('selected');
+  }finally{restoringProject=false;}
+}
+document.addEventListener('input',e=>{
+  if(e.target.closest('#ideaText,#conceptArea,#clarificationQuestions'))queueProjectSave();
+});
+document.addEventListener('click',e=>{
+  if(e.target.closest('button'))setTimeout(queueProjectSave,700);
+});
+window.addEventListener('pagehide',saveProject);
+document.addEventListener('DOMContentLoaded',()=>{
+  restoreProject();
+  // Old saved research is only restored if there is no project-specific report.
+  if(!researchCompleted)restoreSavedResearch();
+});
 </script></body></html>
