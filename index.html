@@ -232,7 +232,14 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 /* Concept presentation and clarification */
 #conceptArea{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .concept-section{background:#fff;border:1px solid var(--line);border-radius:7px;padding:20px;min-width:0}
-.concept-section:first-child,.concept-section:nth-child(5){grid-column:1/-1}
+/* Concept reading order: title, need, goal + audience, remaining blocks */
+.concept-section:nth-child(1){order:1;grid-column:1/-1}
+.concept-section:nth-child(3){order:2;grid-column:1/-1}
+.concept-section:nth-child(4){order:3}
+.concept-section:nth-child(2){order:4}
+.concept-section:nth-child(5){order:5;grid-column:1/-1}
+.concept-section:nth-child(6){order:6}
+.concept-section:nth-child(7){order:7}
 .concept-section h3{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);margin:0 0 12px}
 .concept-section .concept-field{white-space:pre-wrap;line-height:1.65;margin:0;font-size:15px;color:var(--text);font-weight:400}
 #clarificationBox{display:none;margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:22px}
@@ -240,7 +247,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 .clarify-item{margin:15px 0}.clarify-item label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
 .clarify-item textarea{min-height:65px}
 #clarifyStatus{margin:10px 0}
-@media(max-width:750px){#conceptArea{grid-template-columns:1fr}.concept-section:first-child,.concept-section:nth-child(5){grid-column:auto}}
+@media(max-width:750px){#conceptArea{grid-template-columns:1fr}.concept-section:nth-child(1),.concept-section:nth-child(3),.concept-section:nth-child(5){grid-column:auto}}
 </style>
 </head>
 <body><div class="topline"></div><div class="shell">
