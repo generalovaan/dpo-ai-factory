@@ -230,7 +230,25 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 
 
 /* Concept presentation and clarification */
-.research-report{white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere;font-size:15px}
+/* Readable, safely rendered market-research Markdown */
+.research-report{white-space:normal;line-height:1.72;overflow-wrap:anywhere;font-size:15px;color:var(--text)}
+.research-report h1{font-size:25px;line-height:1.3;letter-spacing:-.015em;margin:28px 0 13px;color:var(--blue)}
+.research-report h2{font-size:21px;line-height:1.35;margin:28px 0 12px;padding-bottom:9px;border-bottom:1px solid var(--line);color:var(--blue)}
+.research-report h3{font-size:17px;line-height:1.4;margin:22px 0 9px;color:var(--text)}
+.research-report h4{font-size:15px;margin:18px 0 8px;color:var(--blue)}
+.research-report p{margin:0 0 14px}
+.research-report ul,.research-report ol{margin:9px 0 18px;padding-left:24px}
+.research-report li{margin:6px 0}
+.research-report strong{font-weight:750}
+.research-report a{color:var(--blue2);text-decoration:underline;text-underline-offset:3px}
+.research-report hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.research-report .research-table-scroll{overflow-x:auto;max-width:100%;margin:16px 0 22px;border:1px solid var(--line);border-radius:8px;background:white}
+.research-report table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
+.research-report th,.research-report td{padding:11px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;min-width:100px}
+.research-report th{background:var(--blueSoft);font-weight:750;color:var(--blue)}
+.research-report tr:last-child td{border-bottom:0}
+.research-report > :first-child{margin-top:0}
+@media(max-width:700px){.research-report h1{font-size:21px}.research-report h2{font-size:18px}.research-report th,.research-report td{padding:9px;font-size:13px}}
 #researchSources li{margin:8px 0;overflow-wrap:anywhere}
 #researchSources a{color:var(--blue)}
 #conceptArea{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
@@ -715,13 +733,92 @@ function extractSourceUrls(annotations){
   }
   return urls;
 }
+// Build HTML elements rather than injecting untrusted model-generated HTML.
+function renderResearchMarkdown(container, markdown){
+  container.replaceChildren();
+  const lines=String(markdown||'').replace(/\r/g,'').split('\n');
+  const inline=(parent,text)=>{
+    const re=/(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>]+|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*)/g;
+    let pos=0,m;
+    while((m=re.exec(text))!==null){
+      if(m.index>pos)parent.append(document.createTextNode(text.slice(pos,m.index)));
+      const token=m[0];
+      if(m[1]){
+        const a=document.createElement('a');a.href=m[3];a.textContent=m[2];a.target='_blank';a.rel='noopener noreferrer';parent.append(a);
+      }else if(/^https?:\/\//.test(token)){
+        const a=document.createElement('a');a.href=token;a.textContent=token;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);
+      }else{
+        const strong=token.startsWith('**')||token.startsWith('__');
+        const el=document.createElement(strong?'strong':'em');
+        el.textContent=token.slice(strong?2:1,strong?-2:-1);parent.append(el);
+      }
+      pos=re.lastIndex;
+    }
+    if(pos<text.length)parent.append(document.createTextNode(text.slice(pos)));
+  };
+  const cells=line=>line.trim().replace(/^\|/,'').replace(/\|$/,'').split(/(?<!\\)\|/).map(x=>x.trim().replace(/\\\|/g,'|'));
+  const separator=line=>/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+  let i=0;
+  while(i<lines.length){
+    const line=lines[i].trim();
+    if(!line){i++;continue;}
+    if(/^[-*_]{3,}$/.test(line)){container.append(document.createElement('hr'));i++;continue;}
+    const heading=line.match(/^(#{1,4})\s+(.+)$/);
+    if(heading){const h=document.createElement('h'+heading[1].length);inline(h,heading[2].replace(/\s+#+$/,''));container.append(h);i++;continue;}
+    if(i+1<lines.length && line.includes('|') && separator(lines[i+1])){
+      const headers=cells(lines[i]);
+      const wrap=document.createElement('div');wrap.className='research-table-scroll';
+      const table=document.createElement('table');const thead=document.createElement('thead');const tr=document.createElement('tr');
+      headers.forEach(x=>{const th=document.createElement('th');inline(th,x);tr.append(th)});
+      thead.append(tr);table.append(thead);
+      const tbody=document.createElement('tbody');i+=2;
+      while(i<lines.length && lines[i].trim().includes('|') && lines[i].trim()){
+        const row=document.createElement('tr');const values=cells(lines[i]);
+        headers.forEach((_,j)=>{const td=document.createElement('td');inline(td,values[j]||'');row.append(td)});
+        tbody.append(row);i++;
+      }
+      table.append(tbody);wrap.append(table);container.append(wrap);continue;
+    }
+    const listMatch=line.match(/^([-*+]\s+|\d+[.)]\s+)(.*)$/);
+    if(listMatch){
+      const ordered=/^\d/.test(listMatch[1]);const list=document.createElement(ordered?'ol':'ul');
+      while(i<lines.length){
+        const current=lines[i].trim().match(/^([-*+]\s+|\d+[.)]\s+)(.*)$/);
+        if(!current||/^\d/.test(current[1])!==ordered)break;
+        const li=document.createElement('li');inline(li,current[2]);list.append(li);i++;
+      }
+      container.append(list);continue;
+    }
+    const paragraph=[];
+    while(i<lines.length && lines[i].trim()){
+      const t=lines[i].trim();
+      if(paragraph.length && (/^#{1,4}\s/.test(t)||/^[-*+]\s/.test(t)||/^\d+[.)]\s/.test(t)||/^[-*_]{3,}$/.test(t)|| (i+1<lines.length && t.includes('|') && separator(lines[i+1]))))break;
+      paragraph.push(t);i++;
+    }
+    const p=document.createElement('p');inline(p,paragraph.join(' '));container.append(p);
+  }
+}
+
+const RESEARCH_STORAGE_KEY='dpo-ai-factory-market-research-v1';
+function restoreSavedResearch(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(RESEARCH_STORAGE_KEY)||'null');
+    if(saved?.success && typeof saved.research==='string' && saved.research){
+      renderResearch(saved);
+      researchCompleted=true;
+      markStageDone('Исследование рынка');
+      document.getElementById('researchStatus').textContent='Показано ранее сохранённое исследование. Новый платный запрос не выполнялся.';
+      document.getElementById('runResearchBtn').textContent='Провести исследование повторно · платный поиск';
+    }
+  }catch(error){console.warn('Не удалось восстановить исследование',error?.message);}
+}
 function renderResearch(result){
   lastResearchText=String(result.research||'');
   lastResearchAnnotations=Array.isArray(result.annotations)?result.annotations:[];
   const report=document.getElementById('researchReport');
   report.replaceChildren();
-  // Plain-text rendering prevents model-provided HTML from executing.
-  report.textContent=lastResearchText;
+  // Safe Markdown rendering: headings, lists, tables and links.
+  renderResearchMarkdown(report,lastResearchText);
   const sources=document.getElementById('researchSources');sources.replaceChildren();
   const urls=extractSourceUrls(lastResearchAnnotations);
   const evidence=document.getElementById('researchEvidence');
@@ -758,6 +855,8 @@ async function runResearch(){
     const result=await response.json();
     if(!response.ok||!result.success||!result.research)throw new Error(result.details||result.error||'Сервис не вернул исследование');
     renderResearch(result);
+    try{localStorage.setItem(RESEARCH_STORAGE_KEY,JSON.stringify(result));}
+    catch(error){console.warn('Исследование не сохранилось локально',error?.message);}
     researchCompleted=true;
     markStageDone('Исследование рынка');
     status.textContent='Исследование получено. Проверьте сведения и источники перед принятием решения.';
@@ -925,4 +1024,5 @@ function completeStage(stageLabel){
 }
 
 
+document.addEventListener("DOMContentLoaded",restoreSavedResearch);
 </script></body></html>
