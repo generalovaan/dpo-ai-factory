@@ -423,8 +423,9 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
      <div id="researchSources" style="margin-top:20px"></div>
      <p id="researchCost" class="small" style="margin-top:14px"></p>
      <div class="recommendation-actions">
-       <button class="btn ghost" onclick="ignoreMarketRecommendations(this)">Оставить концепцию без изменений</button>
-       <button id="applyRecommendationsBtn" class="btn ai" onclick="applyMarketRecommendations()">Доработать концепцию вручную по рекомендациям</button>
+       <button id="reviseWithAiBtn" class="btn ai" onclick="reviseConceptWithAiPrototype()">Доработать по рекомендациям ИИ</button>
+       <button id="applyRecommendationsBtn" class="btn ghost" onclick="applyMarketRecommendations()">Доработать самостоятельно</button>
+       <button class="btn ghost" onclick="ignoreMarketRecommendations(this)">Оставить без изменений</button>
      </div>
      <p id="recommendationAppliedNote" class="small recommendation-note" style="display:none"></p>
    </div>
@@ -768,27 +769,30 @@ function extractSourceUrls(annotations){
 }
 // Normalize section 7 into one continuous ordered list, including malformed model lists.
 function normalizeRecommendations(markdown){
-  const lines=String(markdown||'').replace(/\r/g,'').split('\n');
-  let inSection=false, number=0;
-  const out=[];
-  for(let i=0;i<lines.length;i++){
-    const line=lines[i];
-    if(/^\s*#{1,4}\s*7[.)]?\s+/.test(line)){inSection=true;number=0;out.push(line);continue;}
-    if(inSection && /^\s*#{1,4}\s*(?:8[.)]?\s+|Источники)/i.test(line)){inSection=false;}
-    if(!inSection){out.push(line);continue;}
-    const t=line.trim();
-    if(!t){continue;}
-    if(/^\d+[.)]\s*$/.test(t)){continue;}
-    if(/^[-*+]\s+/.test(t) || /^\d+[.)]\s+/.test(t)){
-      number++;
-      out.push(number+'. '+t.replace(/^(?:[-*+]|\d+[.)])\s+/,''));
-    }else if(/^---+$/.test(t)){out.push(line);}
-    else if(number>0 && !/^#{1,4}\s/.test(t)){
-      // Keep wrapped prose as a continuation of the preceding list item.
-      out[out.length-1]+=' '+t;
-    }else{out.push(line);}
+  const source=String(markdown||'').replace(/\r/g,'');
+  const lines=source.split('\n');
+  const start=lines.findIndex(line=>/^\s*#{1,4}\s*7[.)]?\s+/.test(line));
+  if(start<0)return source;
+  let end=lines.findIndex((line,i)=>i>start && /^\s*#{1,4}\s*(?:8[.)]?\s+|Источники\b)/i.test(line));
+  if(end<0)end=lines.length;
+  const section=lines.slice(start+1,end);
+  const items=[];
+  let current='';
+  const finish=()=>{if(current.trim())items.push(current.trim());current='';};
+  for(const raw of section){
+    const line=raw.trim();
+    if(!line || /^[-*_]{3,}$/.test(line))continue;
+    // A number with no text is a formatting artefact, not a recommendation.
+    if(/^\d+[.)]\s*$/.test(line))continue;
+    const marker=line.match(/^(?:\d+[.)]|[-*+])\s+(.+)$/);
+    if(marker){finish();current=marker[1].trim();}
+    else if(current){current+=' '+line;}
+    else{current=line;}
   }
-  return out.join('\n');
+  finish();
+  // All recommendations become a single uninterrupted ordered list.
+  const normalized=items.map((item,i)=>(i+1)+'. '+item);
+  return [...lines.slice(0,start+1),'',...normalized,'',...lines.slice(end)].join('\n');
 }
 function pdfDocumentName(){
   const raw=(document.getElementById('programTitle')?.innerText||'').trim();
@@ -1104,6 +1108,22 @@ function ignoreMarketRecommendations(btn){
   note.textContent='Концепция оставлена без изменений. Решение принимает автор.';
   note.style.display='block';
 }
+function reviseConceptWithAiPrototype(){
+  if(!researchCompleted){alert('Сначала проведите исследование рынка.');return;}
+  // Prototype: do not call the API or pretend the concept was regenerated.
+  // Open the AI editing interface with the research recommendations as context.
+  conceptApprovedV13=false;
+  resetConceptApprovalV13();
+  go('concept');
+  startAIMode();
+  const field=document.getElementById('aiInstruction');
+  if(field){
+    field.value='Доработай концепцию по рекомендациям исследования рынка. Учти все замечания, выявленные риски, пробелы данных и предложения по позиционированию. Не представляй гипотезы как доказанные факты.\n\n'+lastResearchText;
+  }
+  saveProject();
+  future('Доработка по рекомендациям ИИ — прототип','Переход к концепции выполнен, рекомендации подготовлены. Автоматическая повторная генерация пока не подключена. После реального изменения концепцию потребуется утвердить заново.');
+}
+
 function applyMarketRecommendations(){
   if(!researchCompleted){alert('Сначала проведите исследование рынка.');return;}
   const note=document.getElementById('recommendationAppliedNote');
