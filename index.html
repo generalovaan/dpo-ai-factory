@@ -230,6 +230,9 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 
 
 /* Concept presentation and clarification */
+.research-report{white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere;font-size:15px}
+#researchSources li{margin:8px 0;overflow-wrap:anywhere}
+#researchSources a{color:var(--blue)}
 #conceptArea{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .concept-section{background:#fff;border:1px solid var(--line);border-radius:7px;padding:20px;min-width:0}
 /* Concept reading order: title, need, goal + audience, remaining blocks */
@@ -269,7 +272,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 <div class="panel"><div class="eyebrow">Шаг 1 · Идея</div><h2>Расскажите о своей экспертизе и задумке</h2><p class="lead">Не нужно формулировать программу заранее. Опишите, в чём вы специалист, чему могли бы научить и для кого это может быть полезно.</p>
 <textarea id="ideaText" placeholder="Например: Я много лет занимаюсь маркетингом образовательных услуг. Могла бы научить сотрудников вузов проектировать продвижение программ ДПО, но пока не понимаю, какой объём и содержание будут востребованы."></textarea>
 <div class="chips"><button class="chip" onclick="fill('Я специалист в маркетинге образовательных услуг и хочу превратить свою экспертизу в программу ДПО.')">Я специалист в...</button><button class="chip" onclick="fill('Я мог бы научить сотрудников вузов продвигать образовательные программы и набирать слушателей.')">Я мог бы научить...</button><button class="chip" onclick="fill('Хочу сделать программу для руководителей и сотрудников подразделений ДПО.')">Хочу сделать программу для...</button></div>
-<button id="generateConceptBtn" class="btn primary" onclick="generateConcept()">Сформировать концепцию с ИИ</button><p id="conceptGenerationStatus" class="small" role="status" aria-live="polite"></p><p class="small">Генерация концепции через Qwen / Polza AI. Остальные этапы пока демонстрационные.</p></div></section>
+<button id="generateConceptBtn" class="btn primary" onclick="generateConcept()">Сформировать концепцию с ИИ</button><p id="conceptGenerationStatus" class="small" role="status" aria-live="polite"></p><p class="small">Генерация концепции через Qwen / Polza AI. Исследование рынка использует платный веб-поиск; последующие этапы пока демонстрационные.</p></div></section>
 
 <section id="concept" class="section">
 <div class="proto-layout">
@@ -385,42 +388,33 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 <div class="card info-inner"><h3>Что получит автор</h3><ul class="clean"><li>подробный аналитический отчёт</li><li>карту конкурентного поля</li><li>оценку спроса и сегментов аудитории</li><li>рекомендации по позиционированию</li><li>вывод о целесообразности дальнейшей разработки</li></ul></div>
 </div>
 
-<div class="notice">Учебный MVP: реальный веб-поиск и LLM API пока не подключены. Кнопка демонстрирует будущую логику исследования и принятия решения.</div>
+<div class="notice">Исследование выполняется через Qwen с веб-поиском Polza AI и тарифицируется отдельно. Результаты предварительные: проверяйте ссылки, цены и актуальность программ. Решение принимает автор.</div>
 
 <div class="actions">
 <button id="runResearchBtn" class="btn ai" onclick="runResearch()">Провести исследование</button>
 </div>
 
-<div id="marketResult" class="market-result">
-  <div class="market-summary">
-    <div class="eyebrow">Краткий отчёт ИИ</div>
-    <h3>Концепция имеет рыночный потенциал, но требует уточнения позиционирования</h3>
-    <p class="copy">На рынке присутствуют программы по маркетингу образования и управлению ДПО, однако их содержание часто разделяет продуктовую разработку и продвижение. Потенциальная точка отстройки — связать исследование спроса, проектирование программы и маркетинг в едином процессе.</p>
-    <div class="market-verdict">
-      <div class="verdict-card"><strong>Спрос</strong><p class="copy">Потенциально подтверждается для сотрудников ДПО, руководителей образовательных проектов и маркетологов образовательных организаций.</p></div>
-      <div class="verdict-card"><strong>Конкурентная среда</strong><p class="copy">Конкуренция есть; требуется более чёткое позиционирование и практический результат обучения.</p></div>
-      <div class="verdict-card"><strong>Рекомендация</strong><p class="copy">Продолжить разработку после уточнения формата, ценностного предложения и состава практических результатов.</p></div>
-    </div>
-    <div class="pdf-report">
-      <button class="btn" onclick="future('Подробный аналитический отчёт · PDF','В полной версии ИИ сформирует подробный отчёт с источниками, картой конкурентов, сравнением цен и форматов, анализом целевой аудитории и обоснованием рекомендации.')">Открыть подробный отчёт PDF</button>
-      <span class="small">В MVP показана логика формирования отчёта; реальный PDF будет генерироваться после подключения ИИ и веб-поиска.</span>
-    </div>
-<div class="recommendation-actions">
-  <button class="btn ghost" onclick="ignoreMarketRecommendations(this)">Продолжить без изменений концепции</button>
-  <button id="applyRecommendationsBtn" class="btn ai" onclick="applyMarketRecommendations()">Принять рекомендации и обновить концепцию с ИИ</button>
-</div>
-<div id="recommendationAppliedNote" class="small recommendation-note" style="display:none">
-  Рекомендации учтены: ИИ обновил концепцию программы
-</div>
-
-  </div>
-
-  <h3 style="margin-top:24px">Решение автора по результатам исследования</h3>
-  <div class="market-actions two-actions">
-    <button id="researchStopBtn" class="btn danger" onclick="stopProgram()">Не продолжать разработку</button>
-    <button id="researchGoBtn" class="btn success" onclick="acceptResearch()">Перейти к разработке программы</button>
-  </div>
-</div>
+ <p id="researchStatus" class="small" role="status" aria-live="polite"></p>
+ <div id="marketResult" class="market-result">
+   <div class="market-summary">
+     <div class="eyebrow">Предварительное исследование · Qwen с веб-поиском</div>
+     <h3>Аналитический отчёт</h3>
+     <div id="researchEvidence" class="notice" style="margin-bottom:14px"></div>
+     <div id="researchReport" class="research-report"></div>
+     <div id="researchSources" style="margin-top:20px"></div>
+     <p id="researchCost" class="small" style="margin-top:14px"></p>
+     <div class="recommendation-actions">
+       <button class="btn ghost" onclick="ignoreMarketRecommendations(this)">Оставить концепцию без изменений</button>
+       <button id="applyRecommendationsBtn" class="btn ai" onclick="applyMarketRecommendations()">Доработать концепцию вручную по рекомендациям</button>
+     </div>
+     <p id="recommendationAppliedNote" class="small recommendation-note" style="display:none"></p>
+   </div>
+   <h3 style="margin-top:24px">Решение автора по результатам исследования</h3>
+   <div class="market-actions two-actions">
+     <button id="researchStopBtn" class="btn danger" onclick="stopProgram()">Не продолжать разработку</button>
+     <button id="researchGoBtn" class="btn success" onclick="acceptResearch()">Перейти к разработке программы</button>
+   </div>
+ </div>
 </div>
 </div>
 </div></section>
@@ -476,7 +470,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 </section>
 
 </main>
-<footer>Учебный интерактивный MVP · палитра ориентирована на официальную айдентику Московского университета; неподключённые функции обозначены как прототипы.</footer>
+<footer>Учебный интерактивный MVP · концепция и исследование рынка работают через Polza AI; последующие функции обозначены как прототипы. Не является официальным сервисом МГУ.</footer>
 </div>
 
 
@@ -536,6 +530,8 @@ function extractQuestions(text){
 }
 function displayConcept(raw,showQuestions=true){
   lastConceptText=raw;
+  researchCompleted=false;
+  document.getElementById("marketResult").classList.remove("show");
   const parts=splitConcept(raw);
   const area=document.getElementById('conceptArea');
   area.replaceChildren();
@@ -666,7 +662,7 @@ function endManualMode(){
   document.getElementById('manualModeBtn').style.opacity='1';
 }
 
-function saveInlineEdit(){ endManualMode(); conceptSnapshot={}; }
+function saveInlineEdit(){ endManualMode(); conceptSnapshot={}; conceptApprovedV13=false; resetConceptApprovalV13(); researchCompleted=false; document.getElementById("marketResult").classList.remove("show"); }
 
 function cancelManualEdit(silent=false){
   if(Object.keys(conceptSnapshot).length){
@@ -701,17 +697,76 @@ function handleConceptApproval(){
 
 
 let researchCompleted=false;
-function runResearch(){
-  researchCompleted=true;
-  markStageDone('Исследование рынка');
-  const b=document.getElementById('runResearchBtn');
-  b.innerHTML='<span class="check">✓</span> Исследование проведено';
-  b.classList.add('approved');
-  const result=document.getElementById('marketResult');
-  result.classList.add('show');
-  result.scrollIntoView({behavior:'smooth',block:'start'});
+let lastResearchText='';
+let lastResearchAnnotations=[];
+function approvedConceptText(){
+  return CONCEPT_HEADINGS.slice(0,7).map((heading,i)=>{
+    const field=i===0?document.getElementById('programTitle'):document.getElementById('conceptField'+i);
+    return (i+1)+'. '+heading+'\n'+(field?.innerText||field?.textContent||'').trim();
+  }).join('\n\n');
+}
+function extractSourceUrls(annotations){
+  const urls=[];
+  for(const item of annotations){
+    const candidates=[item?.url,item?.url_citation?.url,item?.source?.url,item?.uri];
+    for(const candidate of candidates){
+      if(typeof candidate==='string' && /^https?:\/\//i.test(candidate) && !urls.includes(candidate))urls.push(candidate);
+    }
+  }
+  return urls;
+}
+function renderResearch(result){
+  lastResearchText=String(result.research||'');
+  lastResearchAnnotations=Array.isArray(result.annotations)?result.annotations:[];
+  const report=document.getElementById('researchReport');
+  report.replaceChildren();
+  // Plain-text rendering prevents model-provided HTML from executing.
+  report.textContent=lastResearchText;
+  const sources=document.getElementById('researchSources');sources.replaceChildren();
+  const urls=extractSourceUrls(lastResearchAnnotations);
+  const evidence=document.getElementById('researchEvidence');
+  evidence.textContent=urls.length
+    ? 'Получены ссылки на '+urls.length+' источников. Проверьте, что они подтверждают конкретные факты в отчёте.'
+    : 'В ответе API нет проверяемых ссылок на источники. Не считайте выводы подтверждённым исследованием рынка.';
+  if(urls.length){
+    const heading=document.createElement('h3');heading.textContent='Источники из ответа API';sources.append(heading);
+    const list=document.createElement('ol');
+    for(const url of urls){const li=document.createElement('li');const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=url;li.append(a);list.append(li);}
+    sources.append(list);
+  }
+  const cost=result.cost_rub;
+  document.getElementById('researchCost').textContent=typeof cost==='number'
+    ? 'Стоимость запроса по данным Polza AI: '+cost.toFixed(4)+' ₽.'
+    : 'Стоимость запроса не передана API; проверьте списания в кабинете Polza AI.';
+  document.getElementById('marketResult').classList.add('show');
+  document.getElementById('recommendationAppliedNote').style.display='none';
+}
+async function runResearch(){
+  const status=document.getElementById('researchStatus');
+  const button=document.getElementById('runResearchBtn');
+  if(!conceptApprovedV13){status.textContent='Сначала сформируйте и утвердите концепцию на предыдущем этапе.';return;}
+  const concept=approvedConceptText();
+  if(concept.length<10){status.textContent='Не найдена утверждённая концепция.';return;}
+  if(!confirm('Запустить платное исследование рынка через Polza AI?'))return;
+  button.disabled=true;button.textContent='ИИ исследует рынок…';
+  status.textContent='Выполняется платный веб-поиск. Дождитесь ответа, не запускайте запрос повторно.';
+  try{
+    const response=await fetch(DPO_API_URL,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'market_research',concept})
+    });
+    const result=await response.json();
+    if(!response.ok||!result.success||!result.research)throw new Error(result.details||result.error||'Сервис не вернул исследование');
+    renderResearch(result);
+    researchCompleted=true;
+    markStageDone('Исследование рынка');
+    status.textContent='Исследование получено. Проверьте сведения и источники перед принятием решения.';
+    document.getElementById('marketResult').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){status.textContent='Не удалось выполнить исследование: '+error.message;}
+  finally{button.disabled=false;button.textContent='Провести исследование повторно · платный поиск';}
 }
 function acceptResearch(){
+  if(!researchCompleted){alert("Сначала проведите исследование рынка.");return;}
   markStageDone('Исследование рынка');
   const b=document.getElementById('researchGoBtn');
   b.innerHTML='<span class="check">✓</span> Принято к проектированию';
@@ -724,6 +779,7 @@ function reviseConceptFromResearch(){
   setTimeout(()=>{ closeM(); go('concept'); startAIMode(); document.getElementById('aiInstruction').value='Доработать концепцию с учётом результатов исследования рынка: уточнить позиционирование, формат, ценностное предложение и практический результат программы.'; },900);
 }
 function stopProgram(){
+  if(!researchCompleted){alert("Сначала проведите исследование рынка.");return;}
   const b=document.getElementById('researchStopBtn');
   b.innerHTML='<span class="check">✓</span> Разработка прекращена';
   b.classList.add('selected');
@@ -833,44 +889,20 @@ document.addEventListener('click',function(e){
 
 
 function ignoreMarketRecommendations(btn){
-  if(btn){
-    btn.innerHTML='Продолжить без изменений концепции';
-  }
-}
-
-function applyMarketRecommendations(){
-  const b=document.getElementById('applyRecommendationsBtn');
-  if(b){
-    b.classList.add('approved');
-    b.style.background='#21834b';
-    b.style.borderColor='#21834b';
-    b.style.color='#fff';
-    b.innerHTML='<span class="check">✓</span> Рекомендации внесены в концепцию';
-  }
-
   const note=document.getElementById('recommendationAppliedNote');
-  if(note) note.style.display='block';
-
-  // Update the concept fields already present in the prototype.
-  const updates = {
-    'c-name':'ИИ в образовательном маркетинге: проектирование и продвижение образовательных продуктов',
-    'c-aud':'Руководители и сотрудники подразделений ДПО, руководители образовательных проектов, преподаватели и маркетологи образовательных организаций',
-    'c-problem':'Разработка программ ДПО часто начинается без проверки спроса и конкурентного окружения, а продуктовая и маркетинговая логика подключается слишком поздно',
-    'c-value':'Практическая программа, объединяющая исследование спроса, проектирование образовательного продукта и его продвижение в едином процессе',
-    'c-format':'Практико-ориентированное обучение с разбором реальных образовательных продуктов, проектной работой и готовым проектом программы ДПО на выходе'
-  };
-  Object.entries(updates).forEach(([id,val])=>{
-    const el=document.getElementById(id);
-    if(el){
-      if('value' in el) el.value=val;
-      else el.textContent=val;
-    }
-  });
-
-  // The concept has changed, so it must be approved again before the next research cycle.
-  if(typeof resetConceptApprovalV13==='function') resetConceptApprovalV13();
+  note.textContent='Концепция оставлена без изменений. Решение принимает автор.';
+  note.style.display='block';
 }
-
+function applyMarketRecommendations(){
+  if(!researchCompleted){alert('Сначала проведите исследование рынка.');return;}
+  const note=document.getElementById('recommendationAppliedNote');
+  note.textContent='Перейдите к ручной доработке концепции, используя рекомендации из отчёта. После изменений утвердите её повторно.';
+  note.style.display='block';
+  conceptApprovedV13=false;
+  resetConceptApprovalV13();
+  go('concept');
+  startManualEdit();
+}
 
 function markStageDone(stageLabel){
   document.querySelectorAll('.proto-link,.stage-box').forEach(el=>{
