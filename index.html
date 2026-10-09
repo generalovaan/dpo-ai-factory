@@ -228,6 +228,19 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
 }
 
 
+
+/* Concept presentation and clarification */
+#conceptArea{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.concept-section{background:#fff;border:1px solid var(--line);border-radius:7px;padding:20px;min-width:0}
+.concept-section:first-child,.concept-section:nth-child(5){grid-column:1/-1}
+.concept-section h3{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);margin:0 0 12px}
+.concept-section .concept-field{white-space:pre-wrap;line-height:1.65;margin:0;font-size:15px;color:var(--text);font-weight:400}
+#clarificationBox{display:none;margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:22px}
+#clarificationBox h3{margin:0 0 8px}
+.clarify-item{margin:15px 0}.clarify-item label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.clarify-item textarea{min-height:65px}
+#clarifyStatus{margin:10px 0}
+@media(max-width:750px){#conceptArea{grid-template-columns:1fr}.concept-section:first-child,.concept-section:nth-child(5){grid-column:auto}}
 </style>
 </head>
 <body><div class="topline"></div><div class="shell">
@@ -293,27 +306,15 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
       <h2 style="font-size:31px;margin-bottom:8px">Возможная концепция программы</h2>
       <p class="lead" style="margin-top:0">Ниже представлена сгенерированная концепция программы. Вы можете доработать её с помощью ИИ или отредактировать вручную, изменив текст прямо на странице.</p>
 
-      <div id="conceptArea" class="result-grid">
-        <div class="card info-inner concept-long">
-          <div class="kicker">Рабочее название</div>
-          <div id="programTitle" class="value concept-field">Маркетинг образовательных программ: от исследования аудитории до набора слушателей</div>
-          <p id="c1" class="copy concept-field">Программа предназначена для сотрудников образовательных организаций, которые участвуют в создании и продвижении программ дополнительного профессионального образования. Она связывает проектирование образовательного продукта с исследованием аудитории и маркетинговой логикой.</p>
-          <p id="c2" class="copy concept-field">Слушатели пройдут путь от анализа потребностей и конкурентной среды до формирования ценностного предложения, упаковки программы и выбора каналов продвижения. Работа строится вокруг реальных образовательных продуктов и задач набора.</p>
-          <p id="c3" class="copy concept-field">Результатом станет проект системы продвижения собственной программы: с определённой аудиторией, позиционированием, ключевыми сообщениями и логикой коммуникации со слушателем.</p>
-        </div>
+      <div id="conceptArea" class="result-grid"><div class="concept-section"><p class="copy">Здесь появится концепция после генерации на предыдущем шаге.</p></div></div>
 
-        <div class="card info-inner">
-          <div class="kicker">Предполагаемая аудитория</div>
-          <div id="audience" class="value concept-field">Руководители и сотрудники ДПО, маркетологи и руководители образовательных проектов</div>
-          <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-          <div class="kicker">Решаемая проблема</div>
-          <p id="problem" class="copy concept-field">Продвижение часто начинается после разработки программы и не связано с анализом спроса.</p>
-          <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-          <div class="kicker">Ценность</div>
-          <p id="valueText" class="copy concept-field">Проектировать программу с учётом рынка и выстраивать путь от потребности аудитории до набора.</p>
-        </div>
+      <div id="clarificationBox">
+        <h3>Уточним вашу программу</h3>
+        <p class="copy">ИИ предлагает вопросы, которые помогут уточнить концепцию. Отвечайте только на те, которые считаете важными. Можно пропустить.</p>
+        <div id="clarificationQuestions"></div>
+        <div class="actions"><button id="clarifyBtn" class="btn ai" onclick="refineConceptWithAnswers()">Уточнить концепцию с ИИ</button><button class="btn" onclick="skipClarifications()">Пропустить вопросы</button></div>
+        <p id="clarifyStatus" class="small" role="status" aria-live="polite"></p>
       </div>
-
       <div id="editModeNote" class="mode-note" style="display:none">Режим ручного редактирования включён. Нажмите на любой текст концепции выше и измените его прямо на странице.</div>
       <div id="aiEdit" style="display:none;margin-top:16px">
         <textarea id="aiInstruction" placeholder="Опишите ИИ, что нужно изменить..."></textarea>
@@ -321,7 +322,7 @@ footer{border-top:1px solid var(--line);padding:23px 0;color:var(--muted);font-s
       </div>
       <div id="manualActions" class="actions" style="display:none"><button class="btn primary" onclick="saveInlineEdit()">Сохранить изменения</button><button class="btn" onclick="cancelManualEdit()">Отменить</button></div>
       <div id="conceptMainActions" class="actions">
-        <button id="aiModeBtn" class="btn ai" onclick="startAIMode()">Попросить ИИ доработать</button>
+        <button id="aiModeBtn" class="btn ai" onclick="startAIMode()">Попросить ИИ доработать (прототип)</button>
         <button id="manualModeBtn" class="btn manual" onclick="startManualEdit()">Редактировать текст вручную</button>
         <button id="approveConceptBtn" class="btn primary" onclick="conceptApprovalV13()">Утвердить концепцию</button>
       </div>
@@ -491,58 +492,111 @@ function resetConceptApproval(){
 function go(id){sections.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo({top:0,behavior:'smooth'})}
 function fill(t){ideaText.value=t}
 const DPO_API_URL = 'https://dpo-ai-factory-api.antigeneral.workers.dev/';
+let lastConceptText = '';
+let lastIdea = '';
+let currentQuestions = [];
+const CONCEPT_HEADINGS = [
+  'Рабочее название программы','Целевая аудитория','Образовательная потребность',
+  'Цель программы','Планируемые результаты обучения','Предварительные параметры программы',
+  'Ценностное предложение','Вопросы для уточнения'
+];
+function stripMarkdown(t){
+  return t.replace(/\\([*_.#])/g,'$1').replace(/\*\*/g,'').replace(/^\s*[-*]\s+/gm,'• ').replace(/\r/g,'').trim();
+}
+function splitConcept(raw){
+  let text=String(raw||'').replace(/\r/g,'').replace(/\\([.*])/g,'$1');
+  // Models sometimes return all numbered sections on one line.
+  const hits=[];
+  const re=/(?:^|\s)([1-8])\s*[.．)]\s*(?:\*\*)?\s*(Рабочее название программы|Целевая аудитория|Образовательная потребность|Цель программы|Планируемые результаты обучения|Предварительные параметры программы|Ценностное предложение|Вопросы для уточнения)(?:\*\*)?\s*[:—-]?/gim;
+  let m;
+  while((m=re.exec(text))!==null){hits.push({num:Number(m[1]),start:m.index,end:re.lastIndex});}
+  const parts=Array(8).fill('');
+  for(let i=0;i<hits.length;i++){
+    const h=hits[i];
+    parts[h.num-1]=stripMarkdown(text.slice(h.end,i+1<hits.length?hits[i+1].start:text.length));
+  }
+  if(hits.length<5){
+    parts[0]='Предварительная концепция программы ДПО';
+    parts[2]=stripMarkdown(text);
+  }
+  return parts;
+}
+function extractQuestions(text){
+  if(!text)return [];
+  const lines=text.replace(/\s+(?=\d+[.)]\s+[^\d])/g,'\n').split('\n');
+  const questions=lines.map(x=>x.replace(/^\s*(?:[-*•]|\d+[.)])\s*/,'').trim()).filter(Boolean);
+  return questions.slice(0,5);
+}
+function displayConcept(raw,showQuestions=true){
+  lastConceptText=raw;
+  const parts=splitConcept(raw);
+  const area=document.getElementById('conceptArea');
+  area.replaceChildren();
+  area.style.gridTemplateColumns='';
+  for(let i=0;i<7;i++){
+    const card=document.createElement('div');card.className='concept-section';
+    const heading=document.createElement('h3');heading.textContent=CONCEPT_HEADINGS[i];
+    const content=document.createElement('div');
+    content.className='concept-field';content.id=i===0?'programTitle':'conceptField'+i;
+    content.textContent=parts[i]||'Не указано — можно уточнить вручную.';
+    card.append(heading,content);area.append(card);
+  }
+  currentQuestions=extractQuestions(parts[7]);
+  const box=document.getElementById('clarificationBox');
+  const holder=document.getElementById('clarificationQuestions');holder.replaceChildren();
+  currentQuestions.forEach((q,i)=>{
+    const wrap=document.createElement('div');wrap.className='clarify-item';
+    const label=document.createElement('label');label.textContent=(i+1)+'. '+q;label.htmlFor='clarifyAnswer'+i;
+    const answer=document.createElement('textarea');answer.id='clarifyAnswer'+i;
+    answer.placeholder='Ваш ответ (необязательно)';answer.maxLength=400;
+    wrap.append(label,answer);holder.append(wrap);
+  });
+  box.style.display=showQuestions&&currentQuestions.length?'block':'none';
+  document.getElementById('clarifyStatus').textContent='';
+  conceptSnapshot={};
+  if(typeof resetConceptApprovalV13==='function')resetConceptApprovalV13();
+}
+async function requestConcept(idea){
+  const response=await fetch(DPO_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea})});
+  const result=await response.json();
+  if(!response.ok||!result.success||!result.concept)throw new Error(result.details||result.error||'Сервис не вернул концепцию');
+  return result.concept;
+}
 async function generateConcept(){
-  const idea = document.getElementById('ideaText').value.trim();
-  const status = document.getElementById('conceptGenerationStatus');
-  const button = document.getElementById('generateConceptBtn');
-  if(idea.length < 10 || idea.length > 2000){
-    status.textContent = 'Опишите идею программы: от 10 до 2000 символов.';
-    return;
-  }
-  button.disabled = true;
-  button.textContent = 'ИИ формирует концепцию…';
-  status.textContent = 'Отправляем описание в Qwen. Подождите ответа.';
-  try {
-    const response = await fetch(DPO_API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({idea})
-    });
-    const result = await response.json();
-    if(!response.ok || !result.success || !result.concept){
-      throw new Error(result.details || result.error || 'Сервис не вернул концепцию');
-    }
-    // Create text nodes only: AI output must never be interpreted as HTML.
-    const area = document.getElementById('conceptArea');
-    area.innerHTML = '';
-    area.style.gridTemplateColumns = '1fr';
-    const card = document.createElement('div');
-    card.className = 'card info-inner concept-long';
-    const kicker = document.createElement('div');
-    kicker.className = 'kicker';
-    kicker.textContent = 'Концепция, сформированная ИИ';
-    const title = document.createElement('div');
-    title.id = 'programTitle';
-    title.className = 'value concept-field';
-    title.textContent = 'Предварительная концепция программы ДПО';
-    const content = document.createElement('div');
-    content.id = 'c1';
-    content.className = 'copy concept-field';
-    content.style.whiteSpace = 'pre-wrap';
-    content.style.lineHeight = '1.65';
-    content.textContent = result.concept;
-    card.append(kicker, title, content);
-    area.append(card);
-    conceptSnapshot = {};
-    if(typeof resetConceptApprovalV13 === 'function') resetConceptApprovalV13();
-    status.textContent = '';
-    go('concept');
-  } catch(error){
-    status.textContent = 'Не удалось сформировать концепцию: ' + error.message;
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Сформировать концепцию с ИИ';
-  }
+  const idea=document.getElementById('ideaText').value.trim();
+  const status=document.getElementById('conceptGenerationStatus');
+  const button=document.getElementById('generateConceptBtn');
+  if(idea.length<10||idea.length>2000){status.textContent='Опишите идею программы: от 10 до 2000 символов.';return;}
+  button.disabled=true;button.textContent='ИИ формирует концепцию…';
+  status.textContent='Формируем концепцию. Дождитесь результата.';
+  try{
+    const raw=await requestConcept(idea);
+    lastIdea=idea;displayConcept(raw);status.textContent='';go('concept');
+  }catch(error){status.textContent='Не удалось сформировать концепцию: '+error.message;}
+  finally{button.disabled=false;button.textContent='Сформировать концепцию с ИИ';}
+}
+function skipClarifications(){document.getElementById('clarificationBox').style.display='none';}
+async function refineConceptWithAnswers(){
+  const answers=currentQuestions.map((q,i)=>({q,a:document.getElementById('clarifyAnswer'+i)?.value.trim()||''})).filter(x=>x.a);
+  const status=document.getElementById('clarifyStatus');
+  if(!answers.length){status.textContent='Ответьте хотя бы на один вопрос или нажмите «Пропустить вопросы».';return;}
+  // The existing Worker accepts a single idea field up to 2000 characters.
+  const base=lastIdea.slice(0,750);
+  const qa=answers.map(x=>'Вопрос: '+x.q+' Ответ: '+x.a).join('\n');
+  const instruction='Уточни предварительную концепцию программы ДПО на основе исходной идеи и ответов автора. Сохрани структуру из 8 разделов. Не разрабатывай учебный план.\nИсходная идея: '+base+'\nУточнения автора:\n';
+  const remaining=2000-instruction.length;
+  if(remaining<50){status.textContent='Слишком длинная исходная идея. Сократите её.';return;}
+  const payload=instruction+qa.slice(0,remaining);
+  const button=document.getElementById('clarifyBtn');button.disabled=true;button.textContent='ИИ уточняет концепцию…';
+  status.textContent='Обновляем концепцию с учётом ваших ответов.';
+  try{
+    const raw=await requestConcept(payload);
+    displayConcept(raw,false);
+    status.textContent='';
+    document.getElementById('clarificationBox').style.display='none';
+    document.getElementById('conceptArea').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){status.textContent='Не удалось обновить концепцию: '+error.message;}
+  finally{button.disabled=false;button.textContent='Уточнить концепцию с ИИ';}
 }
 function toggle(id){let x=document.getElementById(id);x.style.display=x.style.display==='none'?'block':'none'}
 
@@ -605,7 +659,7 @@ function endManualMode(){
   document.getElementById('manualModeBtn').style.opacity='1';
 }
 
-function saveInlineEdit(){ endManualMode(); }
+function saveInlineEdit(){ endManualMode(); conceptSnapshot={}; }
 
 function cancelManualEdit(silent=false){
   if(Object.keys(conceptSnapshot).length){
